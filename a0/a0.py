@@ -37,10 +37,10 @@ import sys
 import time
 from TwitterAPI import TwitterAPI
 
-consumer_key = 'fixme'
-consumer_secret = 'fixme'
-access_token = 'fixme'
-access_token_secret = 'fixme'
+consumer_key = '7m5LHxjWcWUx2Q0MgFPw5ePKS'
+consumer_secret = 'uAeJFn5KHpj2WCOgnzOm706AcCTVE9HfnNXs4v09ZI4dwfr9OB'
+access_token = '1088131260843782148-dfn2VAWDTV7WtzM2LIfSXdME69POWP'
+access_token_secret = '4YPRswTNOxk3fQiQS0bKmFGunVGzujy4gGoQCxGHXbdlV'
 
 
 # This method is done for you.
@@ -67,7 +67,15 @@ def read_screen_names(filename):
     ['DrJillStein', 'GovGaryJohnson', 'HillaryClinton', 'realDonaldTrump']
     """
     ###TODO
-    pass
+    # Define the list for storing the screen_names
+    screen_names = []
+    # Open the file, read each line and append each screen_name to the list
+    file = open(filename, "r")
+    for line in file:
+    	line = line.rstrip("\n")
+    	screen_names.append(line)
+   	# print the resulting
+    return screen_names
 
 
 # I've provided the method below to handle Twitter's rate limiting.
@@ -113,7 +121,9 @@ def get_users(twitter, screen_names):
     [6253282, 783214]
     """
     ###TODO
-    pass
+    params = {'screen_name': screen_names}
+    users_dict = robust_request(twitter, "users/lookup", params)
+    return users_dict
 
 
 def get_friends(twitter, screen_name):
@@ -138,7 +148,10 @@ def get_friends(twitter, screen_name):
     [695023, 1697081, 8381682, 10204352, 11669522]
     """
     ###TODO
-    pass
+    params = {'screen_name': screen_name}
+    user_friends_id = robust_request(twitter, "friends/ids", params)
+    # print(user_friends_id)
+    return user_friends_id['ids']
 
 
 def add_all_friends(twitter, users):
@@ -277,6 +290,9 @@ def main():
     users = sorted(get_users(twitter, screen_names), key=lambda x: x['screen_name'])
     print('found %d users with screen_names %s' %
           (len(users), str([u['screen_name'] for u in users])))
+    prof_friends = get_friends(twitter, 'aronwc')[:5]
+    print(prof_friends)
+    [695023, 1697081, 8381682, 10204352, 11669522]
     add_all_friends(twitter, users)
     print('Friends per candidate:')
     print_num_friends(users)
