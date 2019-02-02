@@ -327,35 +327,35 @@ def draw_network(graph, users, filename):
     make it look presentable.
     """
     ###TODO
-    pass
+    
 
 
 def main():
     """ Main method. You should not modify this. """
     twitter = get_twitter()
     screen_names = read_screen_names('candidates.txt')
-    # print('Established Twitter connection.')
-    # print('Read screen names: %s' % screen_names)
+    print('Established Twitter connection.')
+    print('Read screen names: %s' % screen_names)
     users = sorted(get_users(twitter, screen_names), key=lambda x: x['screen_name'])
     print('found %d users with screen_names %s' %
           (len(users), str([u['screen_name'] for u in users])))
-    # print(users)
+    print(users)
     prof_friends = get_friends(twitter, 'aronwc')
     print('Complete response')
-    # print(prof_friends)
+    print(prof_friends)
     [695023, 1697081, 8381682, 10204352, 11669522]
     add_all_friends(twitter, users)
     print('Friends per candidate:')
     print_num_friends(users)
     friend_counts = count_friends(users)
     print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
-    # print('Friend Overlap:\n%s' % str(friend_overlap(users)))
+    print('Friend Overlap:\n%s' % str(friend_overlap(users)))
     print('User followed by Hillary and Donald: %s' % str(followed_by_hillary_and_donald(users, twitter)))
 
     graph = create_graph(users, friend_counts)
     print('graph has %s nodes and %s edges' % (len(graph.nodes()), len(graph.edges())))
-    # draw_network(graph, users, 'network.png')
-    # print('network drawn to network.png')
+    draw_network(graph, users, 'network.png')
+    print('network drawn to network.png')
 
 
 if __name__ == '__main__':
