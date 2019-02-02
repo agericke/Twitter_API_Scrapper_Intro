@@ -35,6 +35,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import sys
 import time
+import json
 from TwitterAPI import TwitterAPI
 
 consumer_key = '7m5LHxjWcWUx2Q0MgFPw5ePKS'
@@ -150,8 +151,11 @@ def get_friends(twitter, screen_name):
     ###TODO
     params = {'screen_name': screen_name}
     user_friends_id = robust_request(twitter, "friends/ids", params)
-    # print(user_friends_id)
-    return user_friends_id['ids']
+    user_friends_ids_text = json.loads(user_friends_id.text)
+    user_friends_id_list = []
+    for user_id in user_friends_ids_text['ids']:
+        user_friends_id_list.append(user_id)
+    return sorted(user_friends_id_list)
 
 
 def add_all_friends(twitter, users):
@@ -290,21 +294,22 @@ def main():
     users = sorted(get_users(twitter, screen_names), key=lambda x: x['screen_name'])
     print('found %d users with screen_names %s' %
           (len(users), str([u['screen_name'] for u in users])))
-    prof_friends = get_friends(twitter, 'aronwc')[:5]
+    prof_friends = get_friends(twitter, 'aronwc')
+    print('Complete response')
     print(prof_friends)
     [695023, 1697081, 8381682, 10204352, 11669522]
-    add_all_friends(twitter, users)
-    print('Friends per candidate:')
-    print_num_friends(users)
-    friend_counts = count_friends(users)
-    print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
-    print('Friend Overlap:\n%s' % str(friend_overlap(users)))
-    print('User followed by Hillary and Donald: %s' % str(followed_by_hillary_and_donald(users, twitter)))
+    # add_all_friends(twitter, users)
+    # print('Friends per candidate:')
+    # print_num_friends(users)
+    # friend_counts = count_friends(users)
+    # print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
+    # print('Friend Overlap:\n%s' % str(friend_overlap(users)))
+    # print('User followed by Hillary and Donald: %s' % str(followed_by_hillary_and_donald(users, twitter)))
 
-    graph = create_graph(users, friend_counts)
-    print('graph has %s nodes and %s edges' % (len(graph.nodes()), len(graph.edges())))
-    draw_network(graph, users, 'network.png')
-    print('network drawn to network.png')
+    # graph = create_graph(users, friend_counts)
+    # print('graph has %s nodes and %s edges' % (len(graph.nodes()), len(graph.edges())))
+    # draw_network(graph, users, 'network.png')
+    # print('network drawn to network.png')
 
 
 if __name__ == '__main__':
