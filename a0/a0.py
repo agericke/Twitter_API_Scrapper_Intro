@@ -177,7 +177,9 @@ def add_all_friends(twitter, users):
     [695023, 1697081, 8381682, 10204352, 11669522]
     """
     ###TODO
-    pass
+    for u in users:
+        # screen_names.append(users['screen_name']) 
+        u['friends'] = get_friends(twitter, u['screen_name'])
 
 
 def print_num_friends(users):
@@ -189,7 +191,8 @@ def print_num_friends(users):
         Nothing
     """
     ###TODO
-    pass
+    for u in users:
+        print("%s %d" % (u['screen_name'], len( u['friends'])))
 
 
 def count_friends(users):
@@ -206,7 +209,12 @@ def count_friends(users):
     [(2, 3), (3, 2), (1, 1)]
     """
     ###TODO
-    pass
+    all_friends = []
+    for u in users:
+        for friend in u['friends']:  
+            all_friends.append(friend)
+    c = Counter(all_friends)
+    return c  
 
 
 def friend_overlap(users):
@@ -231,7 +239,13 @@ def friend_overlap(users):
     [('a', 'c', 3), ('a', 'b', 2), ('b', 'c', 2)]
     """
     ###TODO
-    pass
+    # l = []
+    # actual = 0
+    # for u in users:
+    #     users_comparation = users[actual:(len(users)-1)]
+
+    #     for friend in u['friends']:
+    #         if friend == 
 
 
 def followed_by_hillary_and_donald(users, twitter):
@@ -249,7 +263,25 @@ def followed_by_hillary_and_donald(users, twitter):
         that are followed by both Hillary Clinton and Donald Trump.
     """
     ###TODO
-    pass
+    dt_friends = get_friends(twitter, 'realDonaldTrump')
+    hc_friends = get_friends(twitter, 'HillaryClinton')
+
+    result = []
+
+    for dt_friend in dt_friends:
+        for hc_friend in hc_friends:
+            if (hc_friend == dt_friend):
+                params = {'user_id': dt_friend}
+                user_object = robust_request(twitter, "users/lookup", params)
+                user_json = user_object.json()
+                # print("\nObjeto Json")
+                # print(user_json)
+                # print("\nPrimer Elemento")
+                # print(user_object[0])
+                result.append(user_json[0]['screen_name'])
+
+    return result
+
 
 
 def create_graph(users, friend_counts):
@@ -268,7 +300,20 @@ def create_graph(users, friend_counts):
       A networkx Graph
     """
     ###TODO
-    pass
+    # Create a graph
+    graph = nx.Graph()
+    for u in users:
+        graph.add_node(u['screen_name'])
+        friends = u['friends']
+        for f in friends:
+            num = 0
+            for c in friend_counts:
+                if (c == f):
+                    num +=1
+            if (num > 1):
+                graph.add_node(f)
+
+    return graph
 
 
 def draw_network(graph, users, filename):
@@ -289,25 +334,26 @@ def main():
     """ Main method. You should not modify this. """
     twitter = get_twitter()
     screen_names = read_screen_names('candidates.txt')
-    print('Established Twitter connection.')
-    print('Read screen names: %s' % screen_names)
+    # print('Established Twitter connection.')
+    # print('Read screen names: %s' % screen_names)
     users = sorted(get_users(twitter, screen_names), key=lambda x: x['screen_name'])
     print('found %d users with screen_names %s' %
           (len(users), str([u['screen_name'] for u in users])))
+    # print(users)
     prof_friends = get_friends(twitter, 'aronwc')
     print('Complete response')
-    print(prof_friends)
+    # print(prof_friends)
     [695023, 1697081, 8381682, 10204352, 11669522]
-    # add_all_friends(twitter, users)
-    # print('Friends per candidate:')
-    # print_num_friends(users)
-    # friend_counts = count_friends(users)
-    # print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
+    add_all_friends(twitter, users)
+    print('Friends per candidate:')
+    print_num_friends(users)
+    friend_counts = count_friends(users)
+    print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
     # print('Friend Overlap:\n%s' % str(friend_overlap(users)))
-    # print('User followed by Hillary and Donald: %s' % str(followed_by_hillary_and_donald(users, twitter)))
+    print('User followed by Hillary and Donald: %s' % str(followed_by_hillary_and_donald(users, twitter)))
 
-    # graph = create_graph(users, friend_counts)
-    # print('graph has %s nodes and %s edges' % (len(graph.nodes()), len(graph.edges())))
+    graph = create_graph(users, friend_counts)
+    print('graph has %s nodes and %s edges' % (len(graph.nodes()), len(graph.edges())))
     # draw_network(graph, users, 'network.png')
     # print('network drawn to network.png')
 
