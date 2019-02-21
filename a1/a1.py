@@ -75,8 +75,41 @@ def bfs(graph, root, max_depth):
     >>> sorted((node, sorted(parents)) for node, parents in node2parents.items())
     [('B', ['D']), ('D', ['E']), ('F', ['E']), ('G', ['D', 'F'])]
     """
-    ###TODO
-    pass
+    q = deque()
+    q.append(root)
+    seen = set()       # nodes we have already visited.
+    res = []
+    depth = 1  # Track depth of the search
+    node2distances = defaultdict(int)
+    node2num_paths = defaultdict(int)
+    node2parents = defaultdict(list)
+    node2distances[root] = 0
+    node2num_paths[root] = 1
+    if max_depth == 0:
+        return node2distances, node2num_paths, node2parents
+    while len(q) > 0:  # while more to visit
+        n = q.popleft()
+        if n == 'null':
+            depth += 1
+            continue
+        if depth > max_depth:
+            return node2distances, node2num_paths, node2parents
+        if n not in seen:
+            res.append(n)
+            seen.add(n)
+        for nn in graph.neighbors(n):
+            if nn not in seen:
+                if not q.__contains__(nn):
+                    q.append(nn)
+                if not node2distances.__contains__(nn):
+                    node2distances[nn] = depth
+            if node2distances[nn] == (node2distances[n]+1):
+                node2parents[nn].append(n)
+                node2num_paths[nn] += 1 
+        q.append('null')
+        if n == root:
+            depth += 1
+    return node2distances, node2num_paths, node2parents
 
 
 def complexity_of_bfs(V, E, K):
@@ -91,8 +124,7 @@ def complexity_of_bfs(V, E, K):
     >>> type(v) == int or type(v) == float
     True
     """
-    ###TODO
-    pass
+    return (V+E)
 
 
 def bottom_up(root, node2distances, node2num_paths, node2parents):
@@ -130,9 +162,20 @@ def bottom_up(root, node2distances, node2num_paths, node2parents):
     >>> sorted(result.items())
     [(('A', 'B'), 1.0), (('B', 'C'), 1.0), (('B', 'D'), 3.0), (('D', 'E'), 4.5), (('D', 'G'), 0.5), (('E', 'F'), 1.5), (('F', 'G'), 0.5)]
     """
-    ###TODO
-    pass
-
+    node_credit = defaultdict(float)
+    edges_credit = defaultdict(float)
+    
+    node2distances_order = sorted(node2distances.items(), key=lambda x:(-x[1], x[0]))
+    
+    for node, depth in node2distances_order:
+        node_credit[node] += 1
+        num_paths = node2num_paths[node]
+        for parents in node2parents[node]:
+            for parent in parents:
+                edge = sorted((node, parent))
+                edges_credit[tuple(sorted((node, parent)))] += node_credit[node]/num_paths
+                node_credit[parent] += node_credit[node]/num_paths
+    return edges_credit
 
 def approximate_betweenness(graph, max_depth):
     """
@@ -155,8 +198,15 @@ def approximate_betweenness(graph, max_depth):
     >>> sorted(approximate_betweenness(example_graph(), 2).items())
     [(('A', 'B'), 2.0), (('A', 'C'), 1.0), (('B', 'C'), 2.0), (('B', 'D'), 6.0), (('D', 'E'), 2.5), (('D', 'F'), 2.0), (('D', 'G'), 2.5), (('E', 'F'), 1.5), (('F', 'G'), 1.5)]
     """
-    ###TODO
-    pass
+    edges_btw = Counter()
+    for node in graph.nodes():
+        node2distances, node2num_paths, node2parents = bfs(graph, node, max_depth)
+        edges_credit = bottom_up(node, node2distances, node2num_paths, node2parents)
+        edges_btw.update(edges_credit)
+    edges_btw = dict(edges_btw)
+    for k,v in edges_btw.items():
+        edges_btw[k] /= 2
+    return edges_btw
 
 
 def get_components(graph):
@@ -196,8 +246,12 @@ def partition_girvan_newman(graph, max_depth):
     >>> sorted(components[1].nodes())
     ['D', 'E', 'F', 'G']
     """
-    ###TODO
-    pass
+    graph_copy = graph.copy()
+    while (len(get_components(graph)) < 2):
+      edge_to_remove = sorted(approximate_betweenness(graph, max_depth).items(), key=lambda x:x[1], reverse=True)[0][0]
+      graph_copy.remove_edge(*edge_to_remove)
+    return list(get_components(graph_copy))
+
 
 def get_subgraph(graph, min_degree):
     """Return a subgraph containing nodes whose degree is
@@ -216,8 +270,13 @@ def get_subgraph(graph, min_degree):
     >>> len(subgraph.edges())
     2
     """
-    ###TODO
-    pass
+    degrees = dict(graph.degree())
+    nodes_subgraph = set()
+    for node, degree in degrees.items():
+        if degree >= min_degree:
+            nodes_subgraph.update(node)
+    return graph.subgraph(nodes_subgraph)
+    
 
 
 """"
@@ -237,8 +296,15 @@ def volume(nodes, graph):
     >>> volume(['A', 'B', 'C'], example_graph())
     4
     """
-    ###TODO
-    pass
+    ext_edges = 0
+    int_edges = 0
+    for node in nodes:
+        for neighbor in graph.neighbors(node):
+            if neighbor not in nodes:
+                ext_edges += 1
+            else:
+                int_edges +=1
+    return round(int_edges/2 + ext_edges)
 
 
 def cut(S, T, graph):
@@ -249,15 +315,19 @@ def cut(S, T, graph):
     Params:
       S.......set of nodes in first subset
       T.......set of nodes in second subset
-      graph...networkx graph
-    Returns:
+      graph...networkx grap
+h    Returns:
       An int representing the cut-set.
 
     >>> cut(['A', 'B', 'C'], ['D', 'E', 'F', 'G'], example_graph())
     1
     """
-    ###TODO
-    pass
+    cut_set = 0
+    for node in S:
+        for neighbor in graph.neighbors(node):
+            if neighbor in T:
+                cut_set += 1
+    return cut_set
 
 
 def norm_cut(S, T, graph):
@@ -271,8 +341,7 @@ def norm_cut(S, T, graph):
       An float representing the normalized cut value
 
     """
-    ###TODO
-    pass
+    return (cut(S, T, graph)*(1/volume(S, graph) + 1/volume(T, graph)))
 
 
 def brute_force_norm_cut(graph, max_size):
@@ -305,9 +374,9 @@ def brute_force_norm_cut(graph, max_size):
     >>> sorted(r)[0]
     (0.41666666666666663, [('A', 'B'), ('B', 'D')])
     """
-    ###TODO
-    pass
-
+    q = deque()
+    seen = set()
+    q.append
 
 
 
