@@ -247,12 +247,12 @@ def partition_girvan_newman(graph, max_depth):
     ['D', 'E', 'F', 'G']
     """
     graph_copy = graph.copy()
-    while (len(get_components(graph)) < 2):
-      edge_to_remove = sorted(approximate_betweenness(graph, max_depth).items(), key=lambda x:x[1], reverse=True)[0][0]
-      graph_copy.remove_edge(*edge_to_remove)
+    while (len(get_components(graph_copy)) < 3):
+        edge_to_remove = sorted(approximate_betweenness(graph_copy, max_depth).items(), key=lambda x:x[1], reverse=True)[0][0]
+        graph_copy.remove_edge(*edge_to_remove)
     return list(get_components(graph_copy))
 
-
+                                          
 def get_subgraph(graph, min_degree):
     """Return a subgraph containing nodes whose degree is
     greater than or equal to min_degree.
@@ -524,7 +524,7 @@ def main():
     print('subgraph has %d nodes and %d edges' %
           (subgraph.order(), subgraph.number_of_edges()))
     print('norm_cut scores by max_depth:')
-    print(score_max_depths(subgraph, range(1,5)))
+    # print(score_max_depths(subgraph, range(1,5)))
     clusters = partition_girvan_newman(subgraph, 3)
     print('%d clusters' % len(clusters))
     print('first partition: cluster 1 has %d nodes and cluster 2 has %d nodes' %
@@ -532,16 +532,16 @@ def main():
     print('smaller cluster nodes:')
     print(sorted(clusters, key=lambda x: x.order())[0].nodes())
     test_node = 'Bill Gates'
-    train_graph = make_training_graph(subgraph, test_node, 5)
-    print('train_graph has %d nodes and %d edges' %
-          (train_graph.order(), train_graph.number_of_edges()))
+    # train_graph = make_training_graph(subgraph, test_node, 5)
+    # print('train_graph has %d nodes and %d edges' %
+    #      (train_graph.order(), train_graph.number_of_edges()))
 
 
-    jaccard_scores = jaccard(train_graph, test_node, 5)
-    print('\ntop jaccard scores for Bill Gates:')
-    print(jaccard_scores)
-    print('jaccard accuracy=%g' %
-          evaluate([x[0] for x in jaccard_scores], subgraph))
+    # jaccard_scores = jaccard(train_graph, test_node, 5)
+    # print('\ntop jaccard scores for Bill Gates:')
+    # print(jaccard_scores)
+    # print('jaccard accuracy=%g' %
+    #       evaluate([x[0] for x in jaccard_scores], subgraph))
 
 
 if __name__ == '__main__':
