@@ -247,7 +247,7 @@ def partition_girvan_newman(graph, max_depth):
     ['D', 'E', 'F', 'G']
     """
     graph_copy = graph.copy()
-    while (len(get_components(graph_copy)) < 3):
+    while (len(get_components(graph_copy)) < 2):
         edge_to_remove = sorted(approximate_betweenness(graph_copy, max_depth).items(), key=lambda x:x[1], reverse=True)[0][0]
         graph_copy.remove_edge(*edge_to_remove)
     return list(get_components(graph_copy))
@@ -397,8 +397,13 @@ def score_max_depths(graph, max_depths):
       norm_cut value obtained by the partitions returned by
       partition_girvan_newman. See Log.txt for an example.
     """
-    ###TODO
-    pass
+    result = defaultdict(float)
+    for i in max_depths:
+        components = partition_girvan_newman(graph, i)
+        norm_cut_val = norm_cut(sorted(components[0].nodes()), sorted(components[1].nodes()), graph)
+        result[i] = norm_cut_val
+    return sorted(result.items())
+    
 
 
 ## Link prediction
@@ -435,8 +440,13 @@ def make_training_graph(graph, test_node, n):
     >>> sorted(train_graph.neighbors('D'))
     ['F', 'G']
     """
-    ###TODO
-    pass
+    graph_copy = graph.copy()
+    neighbors = sorted(graph_copy.neighbors(test_node))
+    remove_edges = 0
+    while (remove_edges < n and remove_edges < len(neighbors)):
+        graph_copy.remove_edge(test_node, neighbors[remove_edges])
+        remove_edges += 1
+    return graph_copy
 
 
 
@@ -524,7 +534,7 @@ def main():
     print('subgraph has %d nodes and %d edges' %
           (subgraph.order(), subgraph.number_of_edges()))
     print('norm_cut scores by max_depth:')
-    # print(score_max_depths(subgraph, range(1,5)))
+    print(score_max_depths(subgraph, range(1,5)))
     clusters = partition_girvan_newman(subgraph, 3)
     print('%d clusters' % len(clusters))
     print('first partition: cluster 1 has %d nodes and cluster 2 has %d nodes' %
