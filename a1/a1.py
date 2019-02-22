@@ -476,8 +476,15 @@ def jaccard(graph, node, k):
     >>> jaccard(train_graph, 'D', 2)
     [(('D', 'E'), 0.5), (('D', 'A'), 0.0)]
     """
-    ###TODO
-    pass
+    new_edges = defaultdict(float)
+    neighbors = set(graph.neighbors(node))
+    scores = []
+    for n in graph.nodes():
+        if (graph.has_edge(node, n) or node==n):
+            continue
+        neighbors2 = set(graph.neighbors(n))
+        new_edges[tuple((node, n))] = len(neighbors & neighbors2) / len(neighbors | neighbors2)
+    return sorted(new_edges.items(), key=lambda x: (-x[1], x[0][1]))[:k]
 
 
 
@@ -499,8 +506,7 @@ def evaluate(predicted_edges, graph):
     >>> evaluate([('D', 'E'), ('D', 'A')], example_graph())
     0.5
     """
-    ###TODO
-    pass
+    
 
 
 """
