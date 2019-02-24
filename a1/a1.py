@@ -506,6 +506,13 @@ def evaluate(predicted_edges, graph):
     >>> evaluate([('D', 'E'), ('D', 'A')], example_graph())
     0.5
     """
+    exist = 0
+    if (len(predicted_edges) == 0):
+        return print("Error. You must provide a non-empty list of edges")
+    for edge in predicted_edges:
+        if (graph.has_edge(*edge)):
+            exist += 1
+    return (exist/len(predicted_edges))
     
 
 
@@ -548,16 +555,16 @@ def main():
     print('smaller cluster nodes:')
     print(sorted(clusters, key=lambda x: x.order())[0].nodes())
     test_node = 'Bill Gates'
-    # train_graph = make_training_graph(subgraph, test_node, 5)
-    # print('train_graph has %d nodes and %d edges' %
-    #      (train_graph.order(), train_graph.number_of_edges()))
+    train_graph = make_training_graph(subgraph, test_node, 5)
+    print('train_graph has %d nodes and %d edges' %
+         (train_graph.order(), train_graph.number_of_edges()))
 
 
-    # jaccard_scores = jaccard(train_graph, test_node, 5)
-    # print('\ntop jaccard scores for Bill Gates:')
-    # print(jaccard_scores)
-    # print('jaccard accuracy=%g' %
-    #       evaluate([x[0] for x in jaccard_scores], subgraph))
+    jaccard_scores = jaccard(train_graph, test_node, 5)
+    print('\ntop jaccard scores for Bill Gates:')
+    print(jaccard_scores)
+    print('jaccard accuracy=%g' %
+          evaluate([x[0] for x in jaccard_scores], subgraph))
 
 
 if __name__ == '__main__':
