@@ -1,0 +1,181 @@
+Grade: 35.00/50.00
+
+4 Deduction(s):
+
+--------------
+#1: 2.00 points
+Failing test: test_approx_bet_1: 
+        @points=2
+        
+Traceback (most recent call last):
+  File "../assignments-sol/a1/a1_test.py", line 191, in test_approx_bet_1
+    self.assertListEqual(res, [(('A', 'B'), 5.0), (('A', 'C'), 1.0), (('B', 'C'), 5.0), (('B', 'D'), 12.0), (('D', 'E'), 4.5), (('D', 'F'), 4.0), (('D', 'G'), 4.5), (('E', 'F'), 1.5), (('F', 'G'), 1.5)])
+AssertionError: Lists differ: [(('A[42 chars]C'), 3.5), (('B', 'D'), 10.5), (('D', 'E'), 4.[74 chars]1.5)] != [(('A[42 chars]C'), 5.0), (('B', 'D'), 12.0), (('D', 'E'), 4.[74 chars]1.5)]
+
+First differing element 2:
+(('B', 'C'), 3.5)
+(('B', 'C'), 5.0)
+
+  [(('A', 'B'), 5.0),
+   (('A', 'C'), 1.0),
+-  (('B', 'C'), 3.5),
+?               ^ ^
+
++  (('B', 'C'), 5.0),
+?               ^ ^
+
+-  (('B', 'D'), 10.5),
+?                 --
+
++  (('B', 'D'), 12.0),
+?                ++
+
+-  (('D', 'E'), 4.0),
+?                 ^
+
++  (('D', 'E'), 4.5),
+?                 ^
+
+-  (('D', 'F'), 3.5),
+-  (('D', 'G'), 4.0),
+?          ^
+
++  (('D', 'F'), 4.0),
+?          ^
+
++  (('D', 'G'), 4.5),
+   (('E', 'F'), 1.5),
+   (('F', 'G'), 1.5)]
+
+source:
+    def test_approx_bet_1(self):
+         """
+         @points=2
+         """
+         res = sorted(approximate_betweenness(example_graph(), 5).items())
+         self.assertListEqual(res, [(('A', 'B'), 5.0), (('A', 'C'), 1.0), (('B', 'C'), 5.0), (('B', 'D'), 12.0), (('D', 'E'), 4.5), (('D', 'F'), 4.0), (('D', 'G'), 4.5), (('E', 'F'), 1.5), (('F', 'G'), 1.5)])
+--------------
+
+--------------
+#2: 5.00 points
+Failing test: test_bfs_3: 
+        @points=5
+
+        
+Traceback (most recent call last):
+  File "../assignments-sol/a1/a1_test.py", line 106, in test_bfs_3
+    [('A', 0), ('B', 2), ('C', 1), ('D', 1), ('E', 3), ('F', 4), ('G', 2)])
+AssertionError: Lists differ: [('A', 0), ('B', 2), ('C', 1), ('D', 1), ('E', 3), ('F', 5), ('G', 2)] != [('A', 0), ('B', 2), ('C', 1), ('D', 1), ('E', 3), ('F', 4), ('G', 2)]
+
+First differing element 5:
+('F', 5)
+('F', 4)
+
+- [('A', 0), ('B', 2), ('C', 1), ('D', 1), ('E', 3), ('F', 5), ('G', 2)]
+?                                                          ^
+
++ [('A', 0), ('B', 2), ('C', 1), ('D', 1), ('E', 3), ('F', 4), ('G', 2)]
+?                                                          ^
+
+
+source:
+    def test_bfs_3(self):
+         """
+         @points=5
+ 
+         """
+         graph = example_graph2()
+         node2distances, node2num_paths, node2parents = bfs(graph, 'A', max_depth=10)
+         res = sorted(node2distances.items())
+         res = [(str(x), int(y)) for x,y in res]
+         self.assertListEqual(res,
+                              [('A', 0), ('B', 2), ('C', 1), ('D', 1), ('E', 3), ('F', 4), ('G', 2)])
+         res = sorted(node2num_paths.items())
+         res = [(str(x), int(y)) for x,y in res]
+         self.assertListEqual(res,
+                              [('A', 1), ('B', 1), ('C', 1), ('D', 1), ('E', 3), ('F', 3), ('G', 2)])
+         res = sorted((node, sorted(parents)) for node, parents in node2parents.items())
+         self.assertListEqual(res,
+                              [('B', ['D']), ('C', ['A']), ('D', ['A']), ('E', ['B', 'G']), ('F', ['E']), ('G', ['C', 'D'])])
+         b = bottom_up('A', node2distances, node2num_paths, node2parents)
+         self.assertEqual(1.0, round(b[('E', 'F')], 2))
+         self.assertEqual(3.83, round(b[('A', 'D')], 2))
+         self.assertEqual(1.67, round(b[('B', 'D')], 2))
+         self.assertEqual(1.17, round(b[('D', 'G')], 2))
+         self.assertEqual(2.17, round(b[('A', 'C')], 2))
+         self.assertEqual(0.67, round(b[('B', 'E')], 2))
+         self.assertEqual(1.33, round(b[('E', 'G')], 2))
+         self.assertEqual(1.17, round(b[('C', 'G')], 2))
+--------------
+
+--------------
+#3: 4.00 points
+Failing test: test_brute_force_norm_cut1: 
+        @points=4
+        
+Traceback (most recent call last):
+  File "../assignments-sol/a1/a1_test.py", line 210, in test_brute_force_norm_cut1
+    self.assertEqual(len(r), 1)
+TypeError: object of type 'NoneType' has no len()
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "../assignments-sol/a1/a1_test.py", line 213, in test_brute_force_norm_cut1
+    self.assertTrue(False, 'should take less than 5 seconds...')
+AssertionError: False is not true : should take less than 5 seconds...
+
+source:
+    def test_brute_force_norm_cut1(self):
+         """
+         @points=4
+         """
+         signal.signal(signal.SIGALRM, handler)
+         signal.alarm(5)
+         start = time.time()
+         try:
+             r = brute_force_norm_cut(example_graph(), 1)
+             self.assertEqual(len(r), 1)
+             self.assertEqual(r, [(0.41666666666666663, [('B', 'D')])])
+         except Exception as exc:
+             self.assertTrue(False, 'should take less than 5 seconds...')
+--------------
+
+--------------
+#4: 4.00 points
+Failing test: test_time: 
+        @points=4
+        
+Traceback (most recent call last):
+  File "../assignments-sol/a1/a1_test.py", line 293, in test_time
+    clusters = partition_girvan_newman(self.graph, 3)
+IndexError: list index out of range
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "../assignments-sol/a1/a1_test.py", line 295, in test_time
+    self.assertTrue(False, 'should take less than 30 seconds...')
+AssertionError: False is not true : should take less than 30 seconds...
+
+source:
+    def test_time(self):
+         """
+         @points=4
+         """
+         signal.signal(signal.SIGALRM, handler)
+         signal.alarm(30)
+         start = time.time()
+         try:
+             clusters = partition_girvan_newman(self.graph, 3)
+         except Exception as exc:
+             self.assertTrue(False, 'should take less than 30 seconds...')
+ 
+         signal.alarm(0)
+         self.assertTrue(clusters is not None, 'nothing returned')
+         self.assertTrue(len(clusters) != 0, 'nothing returned')
+         end = time.time()
+         runtime = end - start
+         self.assertTrue(runtime < 30, 'should take less than 30 seconds...')
+--------------
+
