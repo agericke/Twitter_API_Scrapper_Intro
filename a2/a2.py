@@ -59,7 +59,7 @@ def read_data(path):
     Returns:
       docs.....list of strings, one per document
       labels...list of ints, 1=positive, 0=negative label.
-               Inferred from file path (i.e., if it contains
+               Inferred from file path (i.e., if it contains<
                'pos', it is 1, else 0)
     """
     fnames = sorted([f for f in glob.glob(os.path.join(path, 'pos', '*.txt'))])
@@ -90,9 +90,13 @@ def tokenize(doc, keep_internal_punct=False):
     array(['hi', 'there', 'isn', 't', 'this', 'fun'], dtype='<U5')
     >>> tokenize("Hi there! Isn't this fun? ", keep_internal_punct=True)
     array(['hi', 'there', "isn't", 'this', 'fun'], dtype='<U5')
+    >>> tokenize("Hi there! HI", keep_internal_punct=True)
+    array(['hi', 'there', 'hi'], dtype='<U5')
     """
-    ###TODO
-    pass
+    if keep_internal_punct:
+        return np.array(re.sub('\W+(?!\S*[a-z])|(?<!\S)\W+', ' ', doc.lower()).split())
+    
+    return np.array(re.sub('\W+', ' ', doc.lower()).split())
 
 
 def token_features(tokens, feats):
@@ -112,9 +116,16 @@ def token_features(tokens, feats):
     >>> token_features(['hi', 'there', 'hi'], feats)
     >>> sorted(feats.items())
     [('token=hi', 2), ('token=there', 1)]
+    >>> feats = defaultdict(lambda: 0)
+    >>> token_features(['hi', 'there', 'HI'], feats)
+    >>> sorted(feats.items())
+    [('token=HI', 1), ('token=hi', 1), ('token=there', 1)]
     """
-    ###TODO
-    pass
+    token_counts = Counter()
+    token_counts.update(tokens)
+    for token, value in token_counts.items():
+        feats["token=%s" % token] = value
+        
 
 
 def token_pair_features(tokens, feats, k=3):
@@ -143,8 +154,18 @@ def token_pair_features(tokens, feats, k=3):
     >>> sorted(feats.items())
     [('token_pair=a__b', 1), ('token_pair=a__c', 1), ('token_pair=b__c', 2), ('token_pair=b__d', 1), ('token_pair=c__d', 1)]
     """
-    ###TODO
-    pass
+    token_pair_counts = Counter()
+    # Create case for when length of tokens is less than size k
+    if (len(tokens)<k):
+        subarrays = tokens
+        [token_pair_counts.update([combin]) for combin in combinations(subarrays,2)]
+    else:
+        subarrays = [tokens[i:k+i] for i in range(len(tokens)-k+1)]
+        [[token_pair_counts.update([combin]) for combin in combinations(array,2)] for array in subarrays]
+    # Obtain all possible subarrays of size k
+    for tup, value in token_pair_counts.items():
+        feats["token_pair=%s__%s" % (tup[0],tup[1])] = value
+    
 
 
 neg_words = set(['bad', 'hate', 'horrible', 'worst', 'boring'])
@@ -169,8 +190,19 @@ def lexicon_features(tokens, feats):
     >>> sorted(feats.items())
     [('neg_words', 1), ('pos_words', 2)]
     """
-    ###TODO
-    pass
+    #First of all tconvert all tokens to lowercase
+    tokens_lower = [token.lower() for token in tokens]
+    # Obtain how many times does tokens match positive or negative words
+    pos = 0
+    neg = 0
+    for t in tokens_lower:
+        if t in pos_words:
+            pos += 1
+        elif t in neg_words:
+            neg +=  1
+    # Update feats with values
+    feats["neg_words"] = neg
+    feats["pos_words"] = pos
 
 
 def featurize(tokens, feature_fns):
@@ -188,9 +220,20 @@ def featurize(tokens, feature_fns):
     >>> feats = featurize(np.array(['i', 'LOVE', 'this', 'great', 'movie']), [token_features, lexicon_features])
     >>> feats
     [('neg_words', 0), ('pos_words', 2), ('token=LOVE', 1), ('token=great', 1), ('token=i', 1), ('token=movie', 1), ('token=this', 1)]
+    >>> feats = featurize(np.array(['i', 'LOVE', 'love', 'this', 'great', 'movie']), [token_features, lexicon_features])
+    >>> feats
+    [('neg_words', 0), ('pos_words', 3), ('token=LOVE', 1), ('token=great', 1), ('token=i', 1), ('token=love', 1), ('token=movie', 1), ('token=this', 1)]
+    >>> feats = featurize(np.array(['a', 'b', 'c', 'd']), [token_features, token_pair_features, lexicon_features])
+    >>> feats
+    [('neg_words', 0), ('pos_words', 0), ('token=a', 1), ('token=b', 1), ('token=c', 1), ('token=d', 1), ('token_pair=a__b', 1), ('token_pair=a__c', 1), ('token_pair=b__c', 2), ('token_pair=b__d', 1), ('token_pair=c__d', 1)]
+    >>> feats = featurize([], [token_features, token_pair_features, lexicon_features])
+    >>> feats
+    [('neg_words', 0), ('pos_words', 0)]
     """
-    ###TODO
-    pass
+    feats = defaultdict(lambda: 0)
+    for feature_function in feature_fns:
+        feature_function(tokens, feats)
+    return sorted(feats.items(), key=lambda x: (x[0],x[1]))
 
 
 def vectorize(tokens_list, feature_fns, min_freq, vocab=None):
@@ -232,6 +275,10 @@ def vectorize(tokens_list, feature_fns, min_freq, vocab=None):
     """
     ###TODO
     pass
+    # Step zero should be to check if we need to build a new vocab or not
+    # 1- Build vocab: First off all construct all the features vector list? and then pass the features vector list rested for each document?
+    # Then check which features have a value less than the one specified for every document and remove them? 
+    # For each document call the vectorize method.
 
 
 def accuracy_score(truth, predicted):
