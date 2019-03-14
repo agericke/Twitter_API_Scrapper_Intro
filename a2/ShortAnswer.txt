@@ -1,8 +1,18 @@
 1. Looking at the top errors printed by get_top_misclassified, name two ways you would modify your classifier to improve accuracy (it could be features, tokenization, or something else.)
 
+It seems that the most important lines regarding the importance for classification, remain in the final lines, where the reviewer seems to make direct and clear statements about whether he liked or not
+the movie. So one way could be to only pick the final lines of each review, and base the classification among those lines instead of picking the whole review, as it may generate confusion if sarcasm is used 
+through the review.
 
+Another approach could be to analyse independtly each paragraph of the review. We can see that the reviews have several paragraphs separated by <br /><br /> tags. We can analyse separately each paragraph, obtain
+a classification value for each of them and finally compute the review classification by weighting each of the paragraphs classification values obtained for calculating the overall review value for classification.
+The key probably would be in the paragraph weighting part. one approach could be to give higher values to the final paragraphs due to the idea stated before.
 
 
 
 
 2. Implement one of the above methods. How did it affect the results?
+
+I am gonna implement a function that obtains only the final paragraph for each review, pass the docs as only the final paragraphs for each review.
+
+You can check the results obtained running the main function, and you will see the normal case and case for improvement.

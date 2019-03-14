@@ -337,7 +337,7 @@ def cross_validation_accuracy(clf, X, labels, k):
 
 
 def eval_all_combinations(docs, labels, punct_vals,
-                          feature_fns, min_freqs):
+                          feature_fns, min_freqs, improvement=False):
     """
     Enumerate all possible classifier settings and compute the
     cross validation accuracy for each setting. We will use this
@@ -374,8 +374,12 @@ def eval_all_combinations(docs, labels, punct_vals,
 
       This function will take a bit longer to run (~20s for me).
     """
-    tokens_list_false = [tokenize(d) for d in docs]
-    tokens_list_true = [tokenize(d, True) for d in docs]
+    if improvement:
+        tokens_list_false = [tokenize(d.split('<br />')[-1]) for d in docs]
+        tokens_list_true = [tokenize(d.split('<br />')[-1], True) for d in docs]
+    else:
+        tokens_list_false = [tokenize(d) for d in docs]
+        tokens_list_true = [tokenize(d, True) for d in docs]
     
     
     feature_fns_complete = list(feature_fns)
@@ -517,7 +521,7 @@ def top_coefs(clf, label, n, vocab):
     return [x for x in zip(top_coef_terms, top_coef)]
 
 
-def parse_test_data(best_result, vocab):
+def parse_test_data(best_result, vocab, improvement=False):
     """
     Using the vocabulary fit to the training data, read
     and vectorize the testing data. Note that vocab should
@@ -542,6 +546,9 @@ def parse_test_data(best_result, vocab):
                     each column is a feature.
     """
     test_docs, test_labels = read_data(os.path.join('data', 'test'))
+    if improvement==True:
+        test_docs = [d.split('<br \>')[-1] for d in test_docs]
+        test_docs = np.array(test_docs)
     tokens_list = [tokenize(d, best_result['punct']) for d in test_docs]
     X_test, vocab = vectorize(tokens_list, best_result['features'], best_result['min_freq'], vocab)
     
@@ -587,6 +594,8 @@ def print_top_misclassified(test_docs, test_labels, X_test, clf, n):
    
     for i in sort_ind:
         print("truth=%d predicted=%d proba=%6f \n %s" % (test_labels[i], predictions[i], proba_vals_class[i], test_docs[i]))
+        
+        
     
     
 
@@ -627,6 +636,45 @@ def main():
 
     # Parse test data
     test_docs, test_labels, X_test = parse_test_data(best_result, vocab)
+
+    # Evaluate on test set.
+    predictions = clf.predict(X_test)
+    print('testing accuracy=%f' %
+          accuracy_score(test_labels, predictions))
+
+    print('\nTOP MISCLASSIFIED TEST DOCUMENTS:')
+    print_top_misclassified(test_docs, test_labels, X_test, clf, 5)
+    
+    
+    # Evaluate accuracy of many combinations
+    # of tokenization/featurization.
+    print('\n\n Case with improvement method:\n')
+    docs = [d.split('<br \>')[-1] for d in docs]
+    results = eval_all_combinations(docs, labels,
+                                    [True, False],
+                                    feature_fns,
+                                    [2,5,10])
+    # Print information about these results.
+    best_result = results[0]
+    worst_result = results[-1]
+    print('best cross-validation result:\n%s' % str(best_result))
+    print('worst cross-validation result:\n%s' % str(worst_result))
+    plot_sorted_accuracies(results)
+    print('\nMean Accuracies per Setting:')
+    print('\n'.join(['%s: %.5f' % (s,v) for v,s in mean_accuracy_per_setting(results)]))
+
+    # Fit best classifier.
+    clf, vocab = fit_best_classifier(docs, labels, results[0])
+
+    # Print top coefficients per class.
+    print('\nTOP COEFFICIENTS PER CLASS:')
+    print('negative words:')
+    print('\n'.join(['%s: %.5f' % (t,v) for t,v in top_coefs(clf, 0, 5, vocab)]))
+    print('\npositive words:')
+    print('\n'.join(['%s: %.5f' % (t,v) for t,v in top_coefs(clf, 1, 5, vocab)]))
+
+    # Parse test data
+    test_docs, test_labels, X_test = parse_test_data(best_result, vocab, True)
 
     # Evaluate on test set.
     predictions = clf.predict(X_test)
