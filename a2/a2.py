@@ -273,12 +273,30 @@ def vectorize(tokens_list, feature_fns, min_freq, vocab=None):
     >>> sorted(vocab.items(), key=lambda x: x[1])
     [('token=great', 0), ('token=horrible', 1), ('token=isn', 2), ('token=movie', 3), ('token=t', 4), ('token=this', 5)]
     """
-    ###TODO
-    pass
-    # Step zero should be to check if we need to build a new vocab or not
-    # 1- Build vocab: First off all construct all the features vector list? and then pass the features vector list rested for each document?
-    # Then check which features have a value less than the one specified for every document and remove them? 
-    # For each document call the vectorize method.
+    feats_list = [featurize(token, feature_fns) for token in tokens_list]
+    
+    if vocab==None:
+        # Vocab constructor
+        keys_counter = Counter()
+        [[keys_counter.update([tuple_elem[0]]) for tuple_elem in feats_array] for feats_array in feats_list]
+        vocab_keys = [key for key, value in keys_counter.items() if value >= min_freq]
+        vocab = {key: index for index, key in enumerate(sorted(vocab_keys))}
+        
+    #Matrix constructor
+    row_ind = []
+    col_ind = []
+    data = []
+    row = 0 
+    for feats_array in feats_list:
+        feats_dict = dict(feats_array)
+        for key in vocab.keys():
+            if key in feats_dict:
+                row_ind.append(row)
+                col_ind.append(vocab[key])
+                data.append(feats_dict[key])
+        row += 1
+        
+    return csr_matrix((data, (row_ind, col_ind)), shape=(len(tokens_list), len(vocab))), vocab;
 
 
 def accuracy_score(truth, predicted):
@@ -307,8 +325,15 @@ def cross_validation_accuracy(clf, X, labels, k):
       The average testing accuracy of the classifier
       over each fold of cross-validation.
     """
-    ###TODO
-    pass
+    #model = LogisticRegression(solver='lbfgs', multi_class='auto')
+    cv = KFold(n_splits=k)
+    accuracies = []
+    for train_ind, test_ind in cv.split(X):
+        clf.fit(X[train_ind], labels[train_ind])
+        predictions = clf.predict(X[test_ind])
+        accuracies.append(accuracy_score(labels[test_ind], predictions))
+    
+    return np.mean(accuracies)
 
 
 def eval_all_combinations(docs, labels, punct_vals,
@@ -349,8 +374,39 @@ def eval_all_combinations(docs, labels, punct_vals,
 
       This function will take a bit longer to run (~20s for me).
     """
-    ###TODO
-    pass
+    tokens_list_false = [tokenize(d) for d in docs]
+    tokens_list_true = [tokenize(d, True) for d in docs]
+    
+    
+    feature_fns_complete = list(feature_fns)
+    [[feature_fns_complete.append(list(combin)) for combin in combinations(feature_fns, i)] for i in range(2,len(feature_fns)+1)]
+    possible_combinations = [[punct_val, feature_fn, min_freq] for punct_val in punct_vals for feature_fn in feature_fns_complete for min_freq in min_freqs]
+    
+    result = []
+    
+    for punct_val, feature_val, min_freq_val in possible_combinations:
+        if type(feature_val) != list:
+            if punct_val == False:
+                X, vocab = vectorize(tokens_list_false, [feature_val], min_freq_val)
+            else:
+                X, vocab = vectorize(tokens_list_true, [feature_val], min_freq_val)
+            model = LogisticRegression()
+            accuracy_val = cross_validation_accuracy(model, X, labels, 5)
+            result.append({'punct': punct_val, 'features': [feature_val], 'min_freq':min_freq_val, 'accuracy': accuracy_val})
+        else:
+            if punct_val == False:
+                X, vocab = vectorize(tokens_list_false, feature_val, min_freq_val)
+            else:
+                X, vocab = vectorize(tokens_list_true, feature_val, min_freq_val)
+            model = LogisticRegression(solver='lbfgs', multi_class='auto')
+            accuracy_val = cross_validation_accuracy(model, X, labels, 5)
+            result.append({'punct': punct_val, 'features': feature_val, 'min_freq':min_freq_val, 'accuracy': accuracy_val})
+            
+    return sorted(result, key=lambda x: -x['accuracy'])
+        
+        
+    
+    
 
 
 def plot_sorted_accuracies(results):
@@ -359,8 +415,12 @@ def plot_sorted_accuracies(results):
     in ascending order of accuracy.
     Save to "accuracies.png".
     """
-    ###TODO
-    pass
+    accuracies = [res_dic['accuracy'] for res_dic in results]
+    plt.figure()
+    plt.plot(sorted(accuracies))
+    plt.savefig('accuracies.png')
+    
+    
 
 
 def mean_accuracy_per_setting(results):
@@ -377,7 +437,19 @@ def mean_accuracy_per_setting(results):
       descending order of accuracy.
     """
     ###TODO
-    pass
+    pass            
+"""            
+     Returns:
+      A list of dicts, one per combination. Each dict has
+      four keys:
+      'punct': True or False, the setting of keep_internal_punct
+      'features': The list of functions used to compute features.
+      'min_freq': The setting of the min_freq parameter.
+      'accuracy': The average cross_validation accuracy for this setting, using 5 folds.
+
+      This list should be SORTED in descending order of accuracy.
+      """
+
 
 
 def fit_best_classifier(docs, labels, best_result):
@@ -397,8 +469,12 @@ def fit_best_classifier(docs, labels, best_result):
             training data.
       vocab...The dict from feature name to column index.
     """
-    ###TODO
-    pass
+    tokens_list = [tokenize(d, best_result['punct']) for d in docs]
+    X, vocab = vectorize(tokens_list, best_result['features'], best_result['min_freq'], vocab=None)
+    model = LogisticRegression()
+    model.fit(X, labels)
+    return model, vocab
+    
 
 
 def top_coefs(clf, label, n, vocab):
