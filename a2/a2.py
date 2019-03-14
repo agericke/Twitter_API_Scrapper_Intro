@@ -418,6 +418,8 @@ def plot_sorted_accuracies(results):
     accuracies = [res_dic['accuracy'] for res_dic in results]
     plt.figure()
     plt.plot(sorted(accuracies))
+    plt.xlabel('setting')
+    plt.ylabel('accuracy')
     plt.savefig('accuracies.png')
     
     
@@ -436,19 +438,25 @@ def mean_accuracy_per_setting(results):
       A list of (accuracy, setting) tuples, SORTED in
       descending order of accuracy.
     """
-    ###TODO
-    pass            
-"""            
-     Returns:
-      A list of dicts, one per combination. Each dict has
-      four keys:
-      'punct': True or False, the setting of keep_internal_punct
-      'features': The list of functions used to compute features.
-      'min_freq': The setting of the min_freq parameter.
-      'accuracy': The average cross_validation accuracy for this setting, using 5 folds.
+    appearances = defaultdict(lambda: 0)
+    setting_total = Counter()
+    
+    for result_dict in results:
+        accuracy = result_dict['accuracy']
+        for key,value in result_dict.items():
+            if key != 'accuracy':
+                if type(value) == list:
+                    value = ' '.join([fun.__name__ for fun in value])
+                appearances["%s=%s" % (key,value)] += accuracy
+                setting_total.update(["%s=%s" % (key,value)])
+    
+    for key,value in appearances.items():
+        appearances[key] = value/setting_total[key]
+        
+    ret = [(value, key) for key,value in appearances.items()]
+    
+    return sorted(ret, key=lambda x:-x[0])
 
-      This list should be SORTED in descending order of accuracy.
-      """
 
 
 
@@ -470,7 +478,7 @@ def fit_best_classifier(docs, labels, best_result):
       vocab...The dict from feature name to column index.
     """
     tokens_list = [tokenize(d, best_result['punct']) for d in docs]
-    X, vocab = vectorize(tokens_list, best_result['features'], best_result['min_freq'], vocab=None)
+    X, vocab = vectorize(tokens_list, best_result['features'], best_result['min_freq'])
     model = LogisticRegression()
     model.fit(X, labels)
     return model, vocab
@@ -494,8 +502,19 @@ def top_coefs(clf, label, n, vocab):
       in descending order of the coefficient for the
       given class label.
     """
-    ###TODO
-    pass
+    coef = clf.coef_[0]
+    if label==1:
+        # Sort them in descending order.
+        top_coef_ind = np.argsort(coef)[::-1][:n]
+    else:
+        top_coef_ind = np.argsort(coef)[:n]
+    
+    # Get the names of those features.
+    idx2word = dict((v,k) for k,v in vocab.items())
+    top_coef_terms = [idx2word[i] for i in top_coef_ind]
+    # Get the weights of those features
+    top_coef = coef[top_coef_ind]
+    return [x for x in zip(top_coef_terms, top_coef)]
 
 
 def parse_test_data(best_result, vocab):
@@ -522,8 +541,13 @@ def parse_test_data(best_result, vocab):
                     in the test data. Each row is a document,
                     each column is a feature.
     """
-    ###TODO
-    pass
+    test_docs, test_labels = read_data(os.path.join('data', 'test'))
+    tokens_list = [tokenize(d, best_result['punct']) for d in test_docs]
+    X_test, vocab = vectorize(tokens_list, best_result['features'], best_result['min_freq'], vocab)
+    
+    return test_docs, test_labels, X_test
+    
+    
 
 
 def print_top_misclassified(test_docs, test_labels, X_test, clf, n):
@@ -549,8 +573,22 @@ def print_top_misclassified(test_docs, test_labels, X_test, clf, n):
     Returns:
       Nothing; see Log.txt for example printed output.
     """
-    ###TODO
-    pass
+    predictions = clf.predict(X_test)
+    errors_ind = np.where(test_labels!=predictions)[0]
+    proba_vals = clf.predict_proba(X_test)[errors_ind]
+    predictions = predictions[errors_ind]
+    test_docs = test_docs[errors_ind]
+    test_labels = test_labels[errors_ind]
+    
+    proba_vals_class = [elem[0][elem[1]] for elem in zip(proba_vals, predictions)]
+    
+    # Sort them in descending order.
+    sort_ind = np.argsort(proba_vals_class)[::-1][:n]
+   
+    for i in sort_ind:
+        print("truth=%d predicted=%d proba=%6f \n %s" % (test_labels[i], predictions[i], proba_vals_class[i], test_docs[i]))
+    
+    
 
 
 def main():
