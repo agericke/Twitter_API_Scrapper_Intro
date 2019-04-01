@@ -81,10 +81,6 @@ def featurize(movies):
       - The movies DataFrame, which has been modified to include a column named 'features'.
       - The vocab, a dict from term to int. Make sure the vocab is sorted alphabetically as in a2 (e.g., {'aardvark': 0, 'boy': 1, ...})
       
-    >>> movies2 = pd.DataFrame([[123, 'Horror|Romance'], [456, 'Sci-Fi']], columns=['movieId', 'genres'])
-    >>> movies2 = tokenize(movies2)
-    >>> movies2['tokens'].tolist()
-    [['horror', 'romance'], ['sci-fi']]
     >>> download_data()
     >>> path = 'ml-latest-small'
     >>> ratings = pd.read_csv(path + os.path.sep + 'ratings.csv')
@@ -115,27 +111,20 @@ def featurize(movies):
     <class 'scipy.sparse.csr.csr_matrix'>
     """
     
-    # Vocab constructor
+    # Vocab and df constructor
     keys_set = set()
-    [keys_set.update(movie_tokens) for movie_tokens in movies.tokens.to_list()]
-    vocab = {key: index for index, key in enumerate(sorted(keys_set))}
-    #[[keys_counter.update([tuple_elem[0]]) for tuple_elem in feats_array] for feats_array in feats_list]
-    #vocab_keys = [key for key, value in keys_counter.items() if value >= min_freq]
-    #vocab = {key: index for index, key in enumerate(sorted(keys_set))}
-    
     # First compute the number of unique documents containing each term
     #Update df with a set of the tokens just in case there are repeated elements
     df = Counter()
     N = len(movies)
     for movie_tokens in movies.tokens.to_list():
+        keys_set.update(movie_tokens)
+        # We use the set statement to avoid counting several times if a document conayins an item several times
         df.update(set(movie_tokens))
-    
-    #Create dict with index equal to vocab and values number of apperances of each term
-    #not sure in is necessary this array
-    tf_general = []
+    vocab = {key: index for index, key in enumerate(sorted(keys_set))}        
     
     csr_matrix_array = list()
-    # For each movie, obtain the tokens and update data
+    # For each movie, obtain the tokens and update data.
     for movie_tokens in movies.tokens.to_list():
         #Create secific variables for each document
         tf_counter= Counter(movie_tokens)
@@ -147,7 +136,6 @@ def featurize(movies):
                 tf[index] = tf_counter[token]
                 if tf_counter[token] > max_tokfreq_per_movie:
                     max_tokfreq_per_movie = tf_counter[token]
-        tf_general.append(tf)
         
         #Build the arrays for the csr_matrix for each document
         row_ind = []
@@ -160,8 +148,10 @@ def featurize(movies):
                 col_ind.append(vocab[t])
                 data.append((tf[vocab[t]]/max_tokfreq_per_movie)*math.log10(N/df[t]))
             
+       # Append the csr_matrix created
         csr_matrix_array.append(csr_matrix((data, (row_ind, col_ind)), shape=(1, len(vocab))))
     
+    # Update datafram adding new column 'features'
     movies['features'] = csr_matrix_array
     
     return (movies, vocab)
@@ -187,8 +177,9 @@ def cosine_sim(a, b):
       A float. The cosine similarity, defined as: dot(a, b) / ||a|| * ||b||
       where ||a|| indicates the Euclidean norm (aka L2 norm) of vector a.
     """
-    ###TODO
-    pass
+    numerator = np.dot(a.toarray()[0], b.toarray()[0])
+    denominator = np.linalg.norm(a.toarray()[0]) * np.linalg.norm(b.toarray()[0])
+    return float(numerator/denominator)
 
 
 def make_predictions(movies, ratings_train, ratings_test):
@@ -213,8 +204,28 @@ def make_predictions(movies, ratings_train, ratings_test):
     Returns:
       A numpy array containing one predicted rating for each element of ratings_test.
     """
-    ###TODO
-    pass
+    # Initialize numpy array
+    pred_ratings = np.array([])
+    # For each row, Obatin all ratings of user i and compute the weighted average
+    for index, row in ratings_test.iterrows():
+        #print(index)
+        #Obtain all ratings that the user has already done.
+        movie_rating = 0
+        user_pos_ratings = 0
+        # For every raiting the user has done:
+        #   Compute the cosine_sim for that movieId
+        for j, row2 in ratings_train[ratings_train.userId==row.userId].iterrows():
+            weight = cosine_sim(movies[movies.movieId==row2.movieId].features.to_numpy()[0], movies[movies.movieId==row.movieId].features.to_numpy()[0])
+            if  weight > 0:
+                movie_rating += weight*float(row2.rating)
+                user_pos_ratings += 1
+        if user_pos_ratings == 0:
+                movie_rating = ratings_train[ratings_train.userId==row.userId].rating.mean()
+                pred_ratings = np.append(pred_ratings, movie_rating)
+        else:
+            pred_ratings = np.append(pred_ratings, movie_rating/user_pos_ratings)
+        
+    return pred_ratings
 
 
 def mean_absolute_error(predictions, ratings_test):
