@@ -54,8 +54,9 @@ def tokenize(movies):
     >>> movies['tokens'].tolist()
     [['horror', 'romance'], ['sci-fi']]
     """
-    ###TODO
-    pass
+    
+    movies['tokens'] = [tokenize_string(genre) for genre in movies.genres]
+    return movies
 
 
 def featurize(movies):
@@ -74,15 +75,62 @@ def featurize(movies):
     df(i) is the number of unique documents containing term i
 
     Params:
-      movies...The movies DataFrame
+      movies...The movies DataFrame 
     Returns:
       A tuple containing:
       - The movies DataFrame, which has been modified to include a column named 'features'.
       - The vocab, a dict from term to int. Make sure the vocab is sorted alphabetically as in a2 (e.g., {'aardvark': 0, 'boy': 1, ...})
-    """
-    ###TODO
-    pass
-
+    """    
+    # Vocab constructor
+    keys_set = set()
+    [keys_set.update(movie_tokens) for movie_tokens in movies.tokens.to_list()]
+    vocab = {key: index for index, key in enumerate(sorted(keys_set))}
+    #[[keys_counter.update([tuple_elem[0]]) for tuple_elem in feats_array] for feats_array in feats_list]
+    #vocab_keys = [key for key, value in keys_counter.items() if value >= min_freq]
+    #vocab = {key: index for index, key in enumerate(sorted(keys_set))}
+    
+    # First compute the number of unique documents containing each term
+    #Update df with a set of the tokens just in case there are repeated elements
+    df = Counter()
+    N = len(movies)
+    for movie_tokens in movies.tokens.to_list():
+        df.update(set(movie_tokens))
+    
+    #Create dict with index equal to vocab and values number of apperances of each term
+    #not sure in is necessary this array
+    tf_general = []
+    
+    csr_matrix_array = list()
+    # For each movie, obtain the tokens and update data
+    for movie_tokens in movies.tokens.to_list():
+        #Create secific variables for each document
+        tf_counter= Counter(movie_tokens)
+        tf = np.zeros(len(vocab))
+        max_tokfreq_per_movie = 0
+        #Obtain max freq value for a token in the document and freq per token
+        for token, index in vocab.items():
+            if token in tf_counter:
+                tf[index] = tf_counter[token]
+                if tf_counter[token] > max_tokfreq_per_movie:
+                    max_tokfreq_per_movie = tf_counter[token]
+        tf_general.append(tf)
+        
+        #Build the arrays for the csr_matrix for each document
+        row_ind = []
+        col_ind = []
+        data = []
+        row = 0 
+        for t in movie_tokens:
+            if t in vocab.keys():
+                row_ind.append(row)
+                col_ind.append(vocab[t])
+                data.append((tf[vocab[t]]/max_tokfreq_per_movie)*math.log10(N/df[t]))
+            
+        csr_matrix_array.append(csr_matrix((data, (row_ind, col_ind)), shape=(1, len(vocab))))
+    
+    movies['features'] = csr_matrix_array
+    
+    return (movies, vocab)
 
 def train_test_split(ratings):
     """DONE.
