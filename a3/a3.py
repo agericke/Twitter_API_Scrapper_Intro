@@ -80,7 +80,41 @@ def featurize(movies):
       A tuple containing:
       - The movies DataFrame, which has been modified to include a column named 'features'.
       - The vocab, a dict from term to int. Make sure the vocab is sorted alphabetically as in a2 (e.g., {'aardvark': 0, 'boy': 1, ...})
-    """    
+      
+    >>> movies2 = pd.DataFrame([[123, 'Horror|Romance'], [456, 'Sci-Fi']], columns=['movieId', 'genres'])
+    >>> movies2 = tokenize(movies2)
+    >>> movies2['tokens'].tolist()
+    [['horror', 'romance'], ['sci-fi']]
+    >>> download_data()
+    >>> path = 'ml-latest-small'
+    >>> ratings = pd.read_csv(path + os.path.sep + 'ratings.csv')
+    >>> movies = pd.read_csv(path + os.path.sep + 'movies.csv')
+    >>> movies = tokenize(movies)
+    >>> movies = movies.head(5)
+    >>> movies_short, vocab = featurize(movies)
+    >>> sorted(vocab.items(), key=lambda x: x[1])
+    [('adventure', 0), ('animation', 1), ('children', 2), ('comedy', 3), ('drama', 4), ('fantasy', 5), ('romance', 6)]
+    >>> featcol = movies_short['features'].tolist()
+    >>> for feat in featcol:
+    ...     feat.toarray()
+    ...     type(feat)
+    array([[0.39794001, 0.69897   , 0.39794001, 0.09691001, 0.        ,
+            0.39794001, 0.        ]])
+    <class 'scipy.sparse.csr.csr_matrix'>
+    array([[0.39794001, 0.        , 0.39794001, 0.        , 0.        ,
+            0.39794001, 0.        ]])
+    <class 'scipy.sparse.csr.csr_matrix'>
+    array([[0.        , 0.        , 0.        , 0.09691001, 0.        ,
+            0.        , 0.39794001]])
+    <class 'scipy.sparse.csr.csr_matrix'>
+    array([[0.        , 0.        , 0.        , 0.09691001, 0.69897   ,
+            0.        , 0.39794001]])
+    <class 'scipy.sparse.csr.csr_matrix'>
+    array([[0.        , 0.        , 0.        , 0.09691001, 0.        ,
+            0.        , 0.        ]])
+    <class 'scipy.sparse.csr.csr_matrix'>
+    """
+    
     # Vocab constructor
     keys_set = set()
     [keys_set.update(movie_tokens) for movie_tokens in movies.tokens.to_list()]
