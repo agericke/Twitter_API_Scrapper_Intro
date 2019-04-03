@@ -49,7 +49,7 @@ def tokenize(movies):
     Returns:
       The movies DataFrame, augmented to include a new column called 'tokens'.
 
-    >>> movies = pd.DataFrame([[123, 'Horror|Romance'], [456, 'Sci-Fi']], columns=['movieId', 'genres'])
+    >>> movies = pd.DataFrame([[123, 'Horror|Romance|horror|HORROR'], [456, 'Sci-Fi']], columns=['movieId', 'genres'])
     >>> movies = tokenize(movies)
     >>> movies['tokens'].tolist()
     [['horror', 'romance'], ['sci-fi']]
@@ -116,7 +116,7 @@ def featurize(movies):
     # First compute the number of unique documents containing each term
     #Update df with a set of the tokens just in case there are repeated elements
     df = Counter()
-    N = len(movies)
+    N = movies.shape[0]
     for movie_tokens in movies.tokens.to_list():
         keys_set.update(movie_tokens)
         # We use the set statement to avoid counting several times if a document conayins an item several times
@@ -129,26 +129,24 @@ def featurize(movies):
         #Create secific variables for each document
         tf_counter= Counter(movie_tokens)
         tf = np.zeros(len(vocab))
-        max_tokfreq_per_movie = 0
+        max_tokfreq_per_movie = tf_counter.most_common()[0][1]
         #Obtain max freq value for a token in the document and freq per token
         for token, index in vocab.items():
             if token in tf_counter:
                 tf[index] = tf_counter[token]
-                if tf_counter[token] > max_tokfreq_per_movie:
-                    max_tokfreq_per_movie = tf_counter[token]
         
         #Build the arrays for the csr_matrix for each document
         row_ind = []
         col_ind = []
         data = []
-        row = 0 
-        for t in movie_tokens:
+        row = 0
+        for t in set(movie_tokens):
             if t in vocab.keys():
                 row_ind.append(row)
                 col_ind.append(vocab[t])
                 data.append((tf[vocab[t]]/max_tokfreq_per_movie)*math.log10(N/df[t]))
             
-       # Append the csr_matrix created
+        #Append the csr_matrix created
         csr_matrix_array.append(csr_matrix((data, (row_ind, col_ind)), shape=(1, len(vocab))))
     
     # Update datafram adding new column 'features'
@@ -208,22 +206,24 @@ def make_predictions(movies, ratings_train, ratings_test):
     pred_ratings = np.array([])
     # For each row, Obatin all ratings of user i and compute the weighted average
     for index, row in ratings_test.iterrows():
-        #print(index)
         #Obtain all ratings that the user has already done.
         movie_rating = 0
-        user_pos_ratings = 0
+        user_pos_ratings_sum_weight = 0
         # For every raiting the user has done:
-        #   Compute the cosine_sim for that movieId
-        for j, row2 in ratings_train[ratings_train.userId==row.userId].iterrows():
-            weight = cosine_sim(movies[movies.movieId==row2.movieId].features.to_numpy()[0], movies[movies.movieId==row.movieId].features.to_numpy()[0])
+        # Compute the cosine_sim for that movieId
+        # For every other movie that u has rated
+        for j, row2 in ratings_train[ratings_train.userId==int(row.userId)].iterrows():
+            # Compute weight of movie m (other rated movie by user) and movie i (The actual movie we want to predict the rating for)
+            weight = cosine_sim(movies[movies.movieId==int(row2.movieId)].features.values[0], movies[movies.movieId==int(row.movieId)].features.values[0])
             if  weight > 0:
                 movie_rating += weight*float(row2.rating)
-                user_pos_ratings += 1
-        if user_pos_ratings == 0:
-                movie_rating = ratings_train[ratings_train.userId==row.userId].rating.mean()
-                pred_ratings = np.append(pred_ratings, movie_rating)
+                user_pos_ratings_sum_weight += weight
+        
+        if user_pos_ratings_sum_weight == 0:    
+            movie_rating = ratings_train[ratings_train.userId==int(row.userId)].rating.mean()
+            pred_ratings = np.append(pred_ratings, movie_rating)
         else:
-            pred_ratings = np.append(pred_ratings, movie_rating/user_pos_ratings)
+            pred_ratings = np.append(pred_ratings, movie_rating/user_pos_ratings_sum_weight)
         
     return pred_ratings
 
@@ -249,7 +249,6 @@ def main():
     predictions = make_predictions(movies, ratings_train, ratings_test)
     print('error=%f' % mean_absolute_error(predictions, ratings_test))
     print(predictions[:10])
-
 
 if __name__ == '__main__':
     main()

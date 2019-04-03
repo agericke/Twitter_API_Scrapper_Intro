@@ -1,0 +1,623 @@
+vocab:
+[('action', 0), ('adventure', 1), ('animation', 2), ('children', 3), ('comedy', 4), ('crime', 5), ('documentary', 6), ('drama', 7), ('fantasy', 8), ('film-noir', 9)]
+99903 training ratings; 101 testing ratings
+Actual rating is 2.500000
+User positive ratings is 2 and and movie weighted average rating is 7.869968
+Predicted rating has been 2.794565
+
+
+
+Actual rating is 2.000000
+User positive ratings is 152 and and movie weighted average rating is 400.709762
+Predicted rating has been 2.623853
+
+
+
+Actual rating is 1.500000
+User positive ratings is 322 and and movie weighted average rating is 892.862299
+Predicted rating has been 2.765582
+
+
+
+Actual rating is 4.000000
+User positive ratings is 57 and and movie weighted average rating is 242.014101
+Predicted rating has been 4.240648
+
+
+
+Actual rating is 3.500000
+User positive ratings is 50 and and movie weighted average rating is 162.493860
+Predicted rating has been 3.221152
+
+
+
+Actual rating is 5.000000
+User positive ratings is 9 and and movie weighted average rating is 38.117381
+Predicted rating has been 4.114237
+
+
+
+Actual rating is 3.000000
+User positive ratings is 226 and and movie weighted average rating is 887.579975
+Predicted rating has been 3.920406
+
+
+
+Actual rating is 4.000000
+User positive ratings is 16 and and movie weighted average rating is 65.364056
+Predicted rating has been 3.982869
+
+
+
+Actual rating is 3.000000
+User positive ratings is 1 and and movie weighted average rating is 5.676848
+Predicted rating has been 3.215658
+
+
+
+Actual rating is 5.000000
+User positive ratings is 15 and and movie weighted average rating is 50.669354
+Predicted rating has been 3.326928
+
+
+
+Actual rating is 4.000000
+User positive ratings is 0 and and movie weighted average rating is 0.000000
+Predicted rating has been 4.272727
+
+
+
+Actual rating is 4.000000
+User positive ratings is 350 and and movie weighted average rating is 1162.975457
+Predicted rating has been 3.316328
+
+
+
+Actual rating is 3.500000
+User positive ratings is 27 and and movie weighted average rating is 91.222073
+Predicted rating has been 3.374104
+
+
+
+Actual rating is 4.500000
+User positive ratings is 17 and and movie weighted average rating is 62.772878
+Predicted rating has been 3.607091
+
+
+
+Actual rating is 5.000000
+User positive ratings is 49 and and movie weighted average rating is 206.698762
+Predicted rating has been 4.194578
+
+
+
+Actual rating is 1.500000
+User positive ratings is 18 and and movie weighted average rating is 58.145606
+Predicted rating has been 3.117416
+
+
+
+Actual rating is 4.000000
+User positive ratings is 114 and and movie weighted average rating is 446.157155
+Predicted rating has been 3.904107
+
+
+
+Actual rating is 5.000000
+User positive ratings is 126 and and movie weighted average rating is 439.389503
+Predicted rating has been 3.479729
+
+
+
+Actual rating is 3.000000
+User positive ratings is 138 and and movie weighted average rating is 491.905630
+Predicted rating has been 3.546814
+
+
+
+Actual rating is 4.000000
+User positive ratings is 3 and and movie weighted average rating is 15.246245
+Predicted rating has been 3.999569
+
+
+
+Actual rating is 0.500000
+User positive ratings is 56 and and movie weighted average rating is 148.442398
+Predicted rating has been 2.614304
+
+
+
+Actual rating is 3.500000
+User positive ratings is 2 and and movie weighted average rating is 10.507752
+Predicted rating has been 3.830851
+
+
+
+Actual rating is 2.000000
+User positive ratings is 55 and and movie weighted average rating is 189.053144
+Predicted rating has been 3.412940
+
+
+
+Actual rating is 3.000000
+User positive ratings is 5 and and movie weighted average rating is 16.349013
+Predicted rating has been 3.087179
+
+
+
+Actual rating is 3.000000
+User positive ratings is 3 and and movie weighted average rating is 7.335821
+Predicted rating has been 2.227066
+
+
+
+Actual rating is 4.000000
+User positive ratings is 25 and and movie weighted average rating is 99.495149
+Predicted rating has been 3.867925
+
+
+
+Actual rating is 1.000000
+User positive ratings is 13 and and movie weighted average rating is 26.268481
+Predicted rating has been 1.927051
+
+
+
+Actual rating is 2.000000
+User positive ratings is 7 and and movie weighted average rating is 30.036438
+Predicted rating has been 4.156395
+
+
+
+Actual rating is 3.000000
+User positive ratings is 66 and and movie weighted average rating is 234.429991
+Predicted rating has been 3.540943
+
+
+
+Actual rating is 4.000000
+User positive ratings is 163 and and movie weighted average rating is 447.033118
+Predicted rating has been 2.729644
+
+
+
+Actual rating is 1.500000
+User positive ratings is 131 and and movie weighted average rating is 320.634765
+Predicted rating has been 2.429213
+
+
+
+Actual rating is 3.000000
+User positive ratings is 73 and and movie weighted average rating is 274.550542
+Predicted rating has been 3.754287
+
+
+
+Actual rating is 5.000000
+User positive ratings is 105 and and movie weighted average rating is 402.378109
+Predicted rating has been 3.815665
+
+
+
+Actual rating is 4.000000
+User positive ratings is 124 and and movie weighted average rating is 466.752472
+Predicted rating has been 3.756335
+
+
+
+Actual rating is 3.000000
+User positive ratings is 92 and and movie weighted average rating is 312.058209
+Predicted rating has been 3.375946
+
+
+
+Actual rating is 3.000000
+User positive ratings is 37 and and movie weighted average rating is 157.109919
+Predicted rating has been 4.174017
+
+
+
+Actual rating is 4.000000
+User positive ratings is 142 and and movie weighted average rating is 386.511298
+Predicted rating has been 2.702902
+
+
+
+Actual rating is 3.000000
+User positive ratings is 8 and and movie weighted average rating is 30.466117
+Predicted rating has been 3.508173
+
+
+
+Actual rating is 3.000000
+User positive ratings is 31 and and movie weighted average rating is 137.137859
+Predicted rating has been 4.321206
+
+
+
+Actual rating is 3.000000
+User positive ratings is 73 and and movie weighted average rating is 235.560275
+Predicted rating has been 3.192557
+
+
+
+Actual rating is 3.000000
+User positive ratings is 55 and and movie weighted average rating is 219.821103
+Predicted rating has been 3.949896
+
+
+
+Actual rating is 3.500000
+User positive ratings is 286 and and movie weighted average rating is 1045.255383
+Predicted rating has been 3.650508
+
+
+
+Actual rating is 5.000000
+User positive ratings is 5 and and movie weighted average rating is 20.136293
+Predicted rating has been 3.524811
+
+
+
+Actual rating is 2.000000
+User positive ratings is 201 and and movie weighted average rating is 687.482694
+Predicted rating has been 3.403633
+
+
+
+Actual rating is 2.500000
+User positive ratings is 195 and and movie weighted average rating is 597.755093
+Predicted rating has been 3.051353
+
+
+
+Actual rating is 1.000000
+User positive ratings is 10 and and movie weighted average rating is 20.618664
+Predicted rating has been 2.052522
+
+
+
+Actual rating is 3.000000
+User positive ratings is 24 and and movie weighted average rating is 91.899626
+Predicted rating has been 3.776523
+
+
+
+Actual rating is 5.000000
+User positive ratings is 51 and and movie weighted average rating is 191.123780
+Predicted rating has been 3.705550
+
+
+
+Actual rating is 3.000000
+User positive ratings is 100 and and movie weighted average rating is 273.596121
+Predicted rating has been 2.710555
+
+
+
+Actual rating is 1.000000
+User positive ratings is 94 and and movie weighted average rating is 294.768706
+Predicted rating has been 3.113915
+
+
+
+Actual rating is 4.500000
+User positive ratings is 69 and and movie weighted average rating is 233.942533
+Predicted rating has been 3.346965
+
+
+
+Actual rating is 4.000000
+User positive ratings is 31 and and movie weighted average rating is 97.060350
+Predicted rating has been 3.076918
+
+
+
+Actual rating is 4.000000
+User positive ratings is 287 and and movie weighted average rating is 976.803626
+Predicted rating has been 3.395958
+
+
+
+Actual rating is 3.000000
+User positive ratings is 78 and and movie weighted average rating is 248.252242
+Predicted rating has been 3.181731
+
+
+
+Actual rating is 3.000000
+User positive ratings is 234 and and movie weighted average rating is 844.672330
+Predicted rating has been 3.601425
+
+
+
+Actual rating is 0.500000
+User positive ratings is 39 and and movie weighted average rating is 123.383689
+Predicted rating has been 3.160714
+
+
+
+Actual rating is 4.000000
+User positive ratings is 92 and and movie weighted average rating is 327.268493
+Predicted rating has been 3.519470
+
+
+
+Actual rating is 3.000000
+User positive ratings is 8 and and movie weighted average rating is 31.147348
+Predicted rating has been 3.537805
+
+
+
+Actual rating is 4.000000
+User positive ratings is 18 and and movie weighted average rating is 76.098271
+Predicted rating has been 4.125573
+
+
+
+Actual rating is 4.500000
+User positive ratings is 49 and and movie weighted average rating is 213.318017
+Predicted rating has been 4.285142
+
+
+
+Actual rating is 4.500000
+User positive ratings is 36 and and movie weighted average rating is 133.845134
+Predicted rating has been 3.684419
+
+
+
+Actual rating is 2.500000
+User positive ratings is 35 and and movie weighted average rating is 149.172505
+Predicted rating has been 4.219544
+
+
+
+Actual rating is 3.000000
+User positive ratings is 126 and and movie weighted average rating is 379.548468
+Predicted rating has been 3.004732
+
+
+
+Actual rating is 2.500000
+User positive ratings is 196 and and movie weighted average rating is 466.844673
+Predicted rating has been 2.369899
+
+
+
+Actual rating is 3.500000
+User positive ratings is 54 and and movie weighted average rating is 204.882315
+Predicted rating has been 3.755519
+
+
+
+Actual rating is 3.000000
+User positive ratings is 77 and and movie weighted average rating is 268.185041
+Predicted rating has been 3.470461
+
+
+
+Actual rating is 2.000000
+User positive ratings is 222 and and movie weighted average rating is 601.255018
+Predicted rating has been 2.696705
+
+
+
+Actual rating is 2.000000
+User positive ratings is 8 and and movie weighted average rating is 28.379308
+Predicted rating has been 3.511920
+
+
+
+Actual rating is 3.000000
+User positive ratings is 65 and and movie weighted average rating is 248.376006
+Predicted rating has been 3.806343
+
+
+
+Actual rating is 5.000000
+User positive ratings is 17 and and movie weighted average rating is 74.250883
+Predicted rating has been 4.215223
+
+
+
+Actual rating is 3.000000
+User positive ratings is 47 and and movie weighted average rating is 163.308589
+Predicted rating has been 3.449489
+
+
+
+Actual rating is 2.000000
+User positive ratings is 13 and and movie weighted average rating is 52.803320
+Predicted rating has been 3.988254
+
+
+
+Actual rating is 3.500000
+User positive ratings is 69 and and movie weighted average rating is 225.202757
+Predicted rating has been 3.245989
+
+
+
+Actual rating is 3.000000
+User positive ratings is 260 and and movie weighted average rating is 939.717709
+Predicted rating has been 3.605309
+
+
+
+Actual rating is 4.000000
+User positive ratings is 10 and and movie weighted average rating is 41.410217
+Predicted rating has been 3.853746
+
+
+
+Actual rating is 2.000000
+User positive ratings is 30 and and movie weighted average rating is 108.061419
+Predicted rating has been 3.599701
+
+
+
+Actual rating is 4.000000
+User positive ratings is 212 and and movie weighted average rating is 763.279559
+Predicted rating has been 3.586251
+
+
+
+Actual rating is 3.000000
+User positive ratings is 41 and and movie weighted average rating is 135.260113
+Predicted rating has been 3.288026
+
+
+
+Actual rating is 5.000000
+User positive ratings is 12 and and movie weighted average rating is 56.427598
+Predicted rating has been 4.418382
+
+
+
+Actual rating is 4.500000
+User positive ratings is 414 and and movie weighted average rating is 1365.565250
+Predicted rating has been 3.295755
+
+
+
+Actual rating is 4.000000
+User positive ratings is 383 and and movie weighted average rating is 1304.529269
+Predicted rating has been 3.400684
+
+
+
+Actual rating is 4.000000
+User positive ratings is 45 and and movie weighted average rating is 154.582594
+Predicted rating has been 3.418846
+
+
+
+Actual rating is 5.000000
+User positive ratings is 24 and and movie weighted average rating is 112.312709
+Predicted rating has been 4.665050
+
+
+
+Actual rating is 3.000000
+User positive ratings is 327 and and movie weighted average rating is 1166.622384
+Predicted rating has been 3.563847
+
+
+
+Actual rating is 2.000000
+User positive ratings is 294 and and movie weighted average rating is 1068.719959
+Predicted rating has been 3.626903
+
+
+
+Actual rating is 4.000000
+User positive ratings is 14 and and movie weighted average rating is 57.974027
+Predicted rating has been 3.895246
+
+
+
+Actual rating is 5.000000
+User positive ratings is 142 and and movie weighted average rating is 504.008203
+Predicted rating has been 3.535044
+
+
+
+Actual rating is 4.000000
+User positive ratings is 82 and and movie weighted average rating is 259.122133
+Predicted rating has been 3.159530
+
+
+
+Actual rating is 5.000000
+User positive ratings is 34 and and movie weighted average rating is 146.466178
+Predicted rating has been 4.307138
+
+
+
+Actual rating is 4.000000
+User positive ratings is 37 and and movie weighted average rating is 161.638672
+Predicted rating has been 4.353585
+
+
+
+Actual rating is 3.000000
+User positive ratings is 44 and and movie weighted average rating is 162.825239
+Predicted rating has been 3.672285
+
+
+
+Actual rating is 5.000000
+User positive ratings is 29 and and movie weighted average rating is 96.860641
+Predicted rating has been 3.255427
+
+
+
+Actual rating is 4.000000
+User positive ratings is 75 and and movie weighted average rating is 299.387396
+Predicted rating has been 3.955992
+
+
+
+Actual rating is 3.000000
+User positive ratings is 22 and and movie weighted average rating is 69.309021
+Predicted rating has been 3.014860
+
+
+
+Actual rating is 1.000000
+User positive ratings is 248 and and movie weighted average rating is 736.229475
+Predicted rating has been 2.964527
+
+
+
+Actual rating is 2.000000
+User positive ratings is 533 and and movie weighted average rating is 1571.327676
+Predicted rating has been 2.944272
+
+
+
+Actual rating is 3.500000
+User positive ratings is 2 and and movie weighted average rating is 12.904460
+Predicted rating has been 4.608286
+
+
+
+Actual rating is 4.000000
+User positive ratings is 13 and and movie weighted average rating is 44.469674
+Predicted rating has been 3.283414
+
+
+
+Actual rating is 2.500000
+User positive ratings is 159 and and movie weighted average rating is 640.795006
+Predicted rating has been 4.029514
+
+
+
+Actual rating is 4.500000
+User positive ratings is 183 and and movie weighted average rating is 703.984357
+Predicted rating has been 3.837870
+
+
+
+Actual rating is 4.000000
+User positive ratings is 2 and and movie weighted average rating is 8.000000
+Predicted rating has been 4.000000
+
+
+
+error=0.787455
+[2.7945653  2.62385286 2.76558239 4.24064843 3.22115155 4.11423684
+ 3.92040563 3.98286924 3.21565818 3.32692774]
+0       2.5
+1000    2.0
+2000    1.5
+3000    4.0
+4000    3.5
+5000    5.0
+6000    3.0
+7000    4.0
+8000    3.0
+9000    5.0
+Name: rating, dtype: float64
