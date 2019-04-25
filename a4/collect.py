@@ -12,6 +12,7 @@ import sys
 import time
 import json
 import configparser
+import pickle
 from TwitterAPI import TwitterAPI
 
 
@@ -269,14 +270,11 @@ def get_users_by_ids(twitter, ids):
 
 
 def store_users(users, filename):
-    # Save users list of dicts to a users.json file
-    with open(filename, 'a+') as fout:
-        json.dump(users, fout)
+    pickle.dump(users, open(filename, 'wb'))
     
 
-def read_users_from_json(filename):
-    with open(filename, 'r+') as fin:
-        return json.load(fin)
+def read_users(filename):
+    pickle.load(open(filename, 'rb'))
 
 
 def main():
@@ -285,7 +283,7 @@ def main():
     print('Established Twitter connection.')
     
     # 1 - Read the screen names we want to build the network from.
-    screen_names = read_screen_names('ethereum-accounts.txt')
+    screen_names = read_screen_names('data/collect/ethereum-accounts.txt')
     print('Read screen names: %s' % screen_names)
     
     # 2 - Get the user's twitter accounts
@@ -328,8 +326,8 @@ def main():
     # 7 - Add new_users to the initial users list and store it in the file users.json
     users_total = users + new_users
     print(len(users_total)) # Obtain total number of users to store
-    store_users(users_total, 'data/collect/users.json')
-    users_read = read_users_from_json('data/collect/users.json')
+    store_users(users_total, 'data/collect/users.pkl')
+    users_read = read_users('data/collect/users.pkl')
     print(len(users_read)) # Check if len the read users equals the total users stored
 
 

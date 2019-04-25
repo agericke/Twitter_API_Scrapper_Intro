@@ -88,7 +88,7 @@ def robust_request_iterate(twitter, resource, params, max_pages=5):
     return results
 
 
-def read_users_from_json(filename):
+def read_users(filename):
     """
     Read the json file that contains all the user dicts.
     
@@ -97,8 +97,7 @@ def read_users_from_json(filename):
     Returns:
         A list of users dicts, in the order they are listed in the file.
     """
-    with open(filename, 'r+') as fin:
-        return json.load(fin)
+    pickle.load(open(filename, 'rb'))
    
 
 def read_screen_names(filename):
@@ -360,7 +359,7 @@ def main():
 
 
     # 0 - Read users from file created by collect python script and initial screen_names.
-    users = read_users_from_json('data/collect/users.json')
+    users = read_users('data/collect/users.pkl')
     #print(len(users)) # Check len of users, must be 17 users in the list
     initial_screen_names = read_screen_names('data/collect/ethereum-accounts.txt')
     print('\nRead screen names: %s' % initial_screen_names)
