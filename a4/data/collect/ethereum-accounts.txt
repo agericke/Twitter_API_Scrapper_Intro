@@ -1,0 +1,7 @@
+ConsenSysAcad
+ethereum
+VitalikButerin
+gavofyork
+trufflesuite
+coinbase
+binance
