@@ -197,6 +197,7 @@ def create_graph(users, friend_and_followers_counts, initial_screen_names, filen
 
     values_persist = tuple([graph, nodes_with_labels])
     pickle.dump(values_persist, open(filename, 'wb'))
+    print("Graph file stored to %s" % filename)
     return graph, nodes_with_labels
 
 
@@ -248,7 +249,7 @@ def draw_network_communities(graph, node2cluster_dict, initial_screen_names, nod
     
     Args:
       graph..........................The networkx graph to draw.
-      node2cluusterdict..............A dict from node to number of cluster ot which it belongs.
+      node2cluusterdict..............A dict from node to number of cluster to which it belongs.
       initial_screen_names...........The list of the ethreum accounts we started the project with.
       nodes_labeled..................The list of nodes that should have a label in the drawing.
       filename.......................The name of the file to store the image.
@@ -268,6 +269,9 @@ def draw_network_communities(graph, node2cluster_dict, initial_screen_names, nod
             else:
                 sizes[idx] = 5000
     community_values = [node2cluster_dict.get(node) for node in graph.nodes()]
+    community_counter = Counter(community_values)
+    avg_comm_number = sum(community_counter.values())/len(community_counter)
+    print("Average number of users per community is: %f" % avg_comm_number)
     fig = plt.figure(figsize=(60,60))
     plt.axis("off")
     nx.draw_networkx(graph, pos = spring_pos, cmap = plt.get_cmap("jet"), node_color = community_values, node_size = sizes, labels=labels, font_color='gold', font_size=40, font_weight='bold')
@@ -344,7 +348,7 @@ def comm_detect_greedy_modularity_community(graph, filename):
     return node2comm_dict
 
 
-def print_comm_summary(node2cluster_dict, nodes_labeled):
+def print_comm_summary(node2cluster_dict, nodes_labeled, algorithm):
     """
     Print a summary of the clustering. Print all the different clusters and the members of the clusters that
     are part of the main nodes.
@@ -356,7 +360,7 @@ def print_comm_summary(node2cluster_dict, nodes_labeled):
         Nothing. (Only prints)
 
     """
-    print("Partition of main nodes obtained by the Louvain Algorithm:")
+    print("Partition of main nodes obtained by the %s:" % algorithm)
     num_part = max(node2cluster_dict.values()) + 1
     print("Total number of partitions %d" % num_part)
     for comm_i in range(num_part):
@@ -364,8 +368,7 @@ def print_comm_summary(node2cluster_dict, nodes_labeled):
         print("Community %d formed by %s" % (comm_i,comm))
 
 
-def main():
-  
+def main(args):
     twitter = get_twitter('twitter.cfg')
     print('Established Twitter connection.')
 
@@ -373,7 +376,7 @@ def main():
     # 0 - Read users from file created by collect python script and initial screen_names.
     #users = read_users('data/collect/users.pkl')
     users = read_users_from_json('data/collect/users.json')
-    print(len(users)) # Check len of users, must be 17 users in the list
+    print("Read %d user objects" % len(users)) # Check len of users, must be 17 users in the list
     initial_screen_names = read_screen_names('data/collect/ethereum-accounts.txt')
     print('\nRead screen names: %s' % initial_screen_names)
 
@@ -402,16 +405,18 @@ def main():
     print('\nCOMMUNITY DETECTION:')
 
     # 4.1 - Community detection using Girvan Newman Algorithm
-    num_clusters = 3
-    print('\nGirvan Newman Algorithm Clustering:')
-    filename = 'data/cluster/community-detection-girvan-newman-'+str(num_clusters)+'-clusters.pkl'
-    result_gn_list_dict = comm_detect_girvan_newman(graph, nodes_with_labels, filename, k=num_clusters)
-    for i in range(len(result_gn_list_dict)):
-        filename = 'images/cluster/community_detection_girvan-newman-'+str(i+2)+'-clusters.png'
-        draw_network_communities(graph, result_gn_list_dict[i], initial_screen_names, nodes_with_labels, filename)
-        num_clust = i+1
-        print('Clustering of network using Girvan Newman Algorithm  with %d clusters drawn to %s' % (num_clust, filename))
-        print_comm_summary(result_gn_list_dict[i], nodes_with_labels)
+    if len(args) > 1:
+        if args[1] == 'True':
+            num_clusters = 3
+            print('\nGirvan Newman Algorithm Clustering:')
+            filename = 'data/cluster/community-detection-girvan-newman-'+str(num_clusters)+'-clusters.pkl'
+            result_gn_list_dict = comm_detect_girvan_newman(graph, nodes_with_labels, filename, k=num_clusters)
+            for i in range(len(result_gn_list_dict)):
+                filename = 'images/cluster/community_detection_girvan-newman-'+str(i+2)+'-clusters.png'
+                draw_network_communities(graph, result_gn_list_dict[i], initial_screen_names, nodes_with_labels, filename)
+                num_clust = i+1
+                print('Clustering of network using Girvan Newman Algorithm  with %d clusters drawn to %s' % (num_clust, filename))
+                print_comm_summary(result_gn_list_dict[i], nodes_with_labels, "Girvan Newman")
 
     # 4.2 - Community detection using Louvain Algorithm.
     print('\nLouvain Algorithm Clustering:')
@@ -420,7 +425,7 @@ def main():
     filename = 'images/cluster/community-detection-louvian.png'
     draw_network_communities(graph, comm_community_dict, initial_screen_names, nodes_with_labels, filename)
     print('Clustering of network using Louvain Algorithm drawn to %s' % filename)
-    print_comm_summary(comm_community_dict, nodes_with_labels)
+    print_comm_summary(comm_community_dict, nodes_with_labels, "Lovain")
 
     # 4.3 - Community detection using Greedy Modularity.
     print('\nGreedy Modularity Clustering:')
@@ -429,7 +434,7 @@ def main():
     filename = 'images/cluster/community-detection-greedy-modularity.png'
     draw_network_communities(graph, comm_community_dict, initial_screen_names, nodes_with_labels, filename)
     print('Clustering of network using Greedy Modularity Algorithm drawn to %s' % filename)
-    print_comm_summary(comm_community_dict, nodes_with_labels)
+    print_comm_summary(comm_community_dict, nodes_with_labels, "Greedy Modularity")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)

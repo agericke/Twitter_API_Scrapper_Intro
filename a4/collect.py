@@ -28,8 +28,12 @@ def get_census_names():
     females_pct = dict([(f.split()[0].lower(), float(f.split()[1])) for f in females if f])
     male_names = set([m for m in males_pct if m not in females_pct or males_pct[m] > females_pct[m]])
     female_names = set([f for f in females_pct if f not in males_pct or females_pct[f] > males_pct[f]])
-    pickle.dump(male_names, open('data/collect/male_names.pkl','wb'))
-    pickle.dump(female_names, open('data/collect/female_names.pkl','wb'))   
+    filename = "data/collect/male_names.pkl"
+    pickle.dump(male_names, open(filename,'wb'))
+    print("Census male names file saved to %s" % filename)
+    filename = "data/collect/female_names.pkl"
+    pickle.dump(female_names, open(filename,'wb'))   
+    print("Census female names file saved to %s" % filename)
     return male_names, female_names
 
 
@@ -88,35 +92,6 @@ def robust_request(twitter, resource, params, max_tries=5):
             time.sleep(61 * 15)
 
 
-def robust_request_iterate(twitter, resource, params, max_pages=5):
-    """ Function for managing pagination of results
-    It will sequentially obtain all the pages using the cursor provided by Twittter.
-    Args:
-      twitter .... A TwitterAPI object.
-      resource ... A resource string to request
-      params ..... A parameter dict for the request, e.g., to specify
-                   parameters like screen_name or count.
-      max_pages .. The maximum number of pages to ask for.
-    Returns:
-      A TwitterResponse object, or None if failed.
-    """
-    cursor = -1
-    # Add cursor parameter to params:
-    params['cursor'] = cursor
-    print(params)
-    results = []
-    while True:
-        response = robust_request(twitter, resource, params)
-        results.extend(response)
-        print(response)
-        next_cursor = response.json()['next_cursor']
-        print(next_cursor)
-        params['cursor'] = next_cursor
-        if (next_cursor == 0):
-            break
-    return results
-
-
 def get_first_name(tweet):
     """
     Get the first name from a twitter object.
@@ -168,6 +143,7 @@ def get_realtime_tweets(twitter, limit, words, male_names, female_names, filenam
         except:
             print("Unexpected error:", sys.exc_info()[0])
     pickle.dump(tweets, open(filename, 'wb'))
+    print("Real time tweets saved to %s" % filename)
     return tweets
 
 
@@ -342,6 +318,7 @@ def get_users_by_ids(twitter, ids):
 
 def store_users(users, filename):
     pickle.dump(users, open(filename, 'wb'))
+    print("Users file saved to %s" % filename)
     
 
 def read_users(filename):
@@ -363,7 +340,9 @@ def main():
             'solidity', 'litecoin', 'hyperledger','eos','dapp', 'dapps', 'smart contract', 'smart contracts', 'neo', 'miner', 'mining',
             'sidechain','pos','pow', 'dlt', 'polkadot']
     filename = 'data/collect/real-time-tweets.pkl'
+    print("Pick tweets realted to Blockchain words %s" % words)
     tweets = get_realtime_tweets(twitter, 5000, words, male_names, female_names, filename)
+    print("NUMBER OF TWEETS SAMPLED:")
     print('sampled %d tweets' % len(tweets))
     print('top names:', Counter(get_first_name(t) for t in tweets).most_common(10))
     
@@ -409,10 +388,8 @@ def main():
     
     # 8 - Add new_users to the initial users list and store it in the file users.json
     users_total = users + new_users
-    print(len(users_total)) # Obtain total number of users to store
+    print("total user objects obtained with friends and followers %d" % len(users_total)) # Obtain total number of users to store
     store_users(users_total, 'data/collect/users.pkl')
-    users_read = read_users('data/collect/users.pkl')
-    print(len(users_read)) # Check if len the read users equals the total users stored
 
 
 if __name__ == "__main__":

@@ -374,8 +374,6 @@ def print_top_misclassified(test_tweets, test_labels, X_test, clf, n):
     """
     predictions = clf.predict(X_test)
     errors_ind = np.where(test_labels!=predictions)[0]
-    print(type(errors_ind))
-    print(errors_ind)
     proba_vals = clf.predict_proba(X_test)[errors_ind]
     wrong_tweets = []
     for idx in errors_ind:
@@ -402,7 +400,7 @@ def main():
 	# 1 - Retrieve the real time tweets
     filename = 'data/collect/real-time-tweets.pkl'
     tweets = read_real_time_tweets(filename)
-    print('sampled %d tweets' % len(tweets))
+    print('Read %d tweets for training data' % len(tweets))
     print('top names:', Counter(get_first_name(t) for t in tweets).most_common(10))
 
 
@@ -425,7 +423,7 @@ def main():
     print("\n")
     print('worst cross-validation result:\n%s\nwith options\n%s' % (str(worst_result[0]), worst_result_opt))
     
-    filename = '../images/classify/accuracies.png'
+    filename = 'images/classify/accuracies.png'
     plot_sorted_accuracies(results_sorted, filename)
     print("Sorted accuracies plot saved to %s" % filename)
     
@@ -445,6 +443,10 @@ def main():
     # 6 -Parse test data
     test_tweets, test_labels, X_test = parse_test_data(best_result, vocabulary)
 
+    test_counter = Counter(test_labels)
+    print("Number of female instances %d" % test_counter[1])
+    male_instances = sum(test_counter[1])
+    print("Number of male instances %d" % test_counter[0])
     # Evaluate on test set.
     predictions = clf.predict(X_test)
     print('testing accuracy=%f' % accuracy_score(test_labels, predictions))
