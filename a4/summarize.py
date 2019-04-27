@@ -5,7 +5,7 @@ import os, sys
 
 def main(args):
 	print("SUMMARY FOR collect.py:")
-	#os.system('python collect.py')
+	os.system('python collect.py')
 	print("\n\n")
 	print("SUMMARY FOR cluster.py:")
 	if len(args) > 1:
