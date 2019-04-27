@@ -98,6 +98,18 @@ def read_users(filename):
         A list of users dicts, in the order they are listed in the file.
     """
     pickle.load(open(filename, 'rb'))
+
+def read_users_from_json(filename):
+    """
+    Read the json file that contains all the user dicts.
+    
+    Params:
+        filename....Name of the file to read
+    Returns:
+        A list of users dicts, in the order they are listed in the file.
+    """
+    with open(filename, 'r+') as fin:
+        return json.load(fin)
    
 
 def read_screen_names(filename):
@@ -359,8 +371,9 @@ def main():
 
 
     # 0 - Read users from file created by collect python script and initial screen_names.
-    users = read_users('data/collect/users.pkl')
-    #print(len(users)) # Check len of users, must be 17 users in the list
+    #users = read_users('data/collect/users.pkl')
+    users = read_users_from_json('data/collect/users.json')
+    print(len(users)) # Check len of users, must be 17 users in the list
     initial_screen_names = read_screen_names('data/collect/ethereum-accounts.txt')
     print('\nRead screen names: %s' % initial_screen_names)
 
@@ -389,16 +402,16 @@ def main():
     print('\nCOMMUNITY DETECTION:')
 
     # 4.1 - Community detection using Girvan Newman Algorithm
-    # num_clusters = 3
-    # print('\nGirvan Newman Algorithm Clustering:')
-    # filename = 'data/cluster/community-detection-girvan-newman-'+str(num_clusters)+'-clusters.pkl'
-    # result_gn_list_dict = comm_detect_girvan_newman(graph, nodes_with_labels, filename, k=num_clusters)
-    # for i in range(len(result_gn_list_dict)):
-    #     filename = 'images/cluster/community_detection_girvan-newman-'+str(i+1)+'-clusters.png'
-    #     draw_network_communities(graph, result_gn_list_dict[i], initial_screen_names, nodes_with_labels, filename)
-    #     num_clust = i+1
-    #     print('Clustering of network using Girvan Newman Algorithm  with %d clusters drawn to %s' % (num_clust, filename))
-    #     print_comm_summary(result_gn_list_dict[i], nodes_with_labels)
+    num_clusters = 3
+    print('\nGirvan Newman Algorithm Clustering:')
+    filename = 'data/cluster/community-detection-girvan-newman-'+str(num_clusters)+'-clusters.pkl'
+    result_gn_list_dict = comm_detect_girvan_newman(graph, nodes_with_labels, filename, k=num_clusters)
+    for i in range(len(result_gn_list_dict)):
+        filename = 'images/cluster/community_detection_girvan-newman-'+str(i+2)+'-clusters.png'
+        draw_network_communities(graph, result_gn_list_dict[i], initial_screen_names, nodes_with_labels, filename)
+        num_clust = i+1
+        print('Clustering of network using Girvan Newman Algorithm  with %d clusters drawn to %s' % (num_clust, filename))
+        print_comm_summary(result_gn_list_dict[i], nodes_with_labels)
 
     # 4.2 - Community detection using Louvain Algorithm.
     print('\nLouvain Algorithm Clustering:')
