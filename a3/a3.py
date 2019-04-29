@@ -117,7 +117,7 @@ def featurize(movies):
     #Update df with a set of the tokens just in case there are repeated elements
     df = Counter()
     N = movies.shape[0]
-    for movie_tokens in movies.tokens.to_list():
+    for movie_tokens in movies.tokens: #.to_list(): # not needed -awc
         keys_set.update(movie_tokens)
         # We use the set statement to avoid counting several times if a document conayins an item several times
         df.update(set(movie_tokens))
@@ -125,7 +125,7 @@ def featurize(movies):
     
     csr_matrix_array = list()
     # For each movie, obtain the tokens and update data.
-    for movie_tokens in movies.tokens.to_list():
+    for movie_tokens in movies.tokens: #.to_list(): # not needed -awc
         #Create secific variables for each document
         tf_counter= Counter(movie_tokens)
         tf = np.zeros(len(vocab))
@@ -175,9 +175,13 @@ def cosine_sim(a, b):
       A float. The cosine similarity, defined as: dot(a, b) / ||a|| * ||b||
       where ||a|| indicates the Euclidean norm (aka L2 norm) of vector a.
     """
-    numerator = np.dot(a.toarray()[0], b.toarray()[0])
-    denominator = np.linalg.norm(a.toarray()[0]) * np.linalg.norm(b.toarray()[0])
-    return float(numerator/denominator)
+    # use csr_matrix, not array -awc
+    def norm(a):
+        return math.sqrt(a.dot(a.T).sum())
+    return a.dot(b.T).sum() / ((norm(a) * norm(b)))    
+    # numerator = np.dot(a.toarray()[0], b.toarray()[0])
+    # denominator = np.linalg.norm(a.toarray()[0]) * np.linalg.norm(b.toarray()[0])
+    # return float(numerator/denominator)
 
 
 def make_predictions(movies, ratings_train, ratings_test):
