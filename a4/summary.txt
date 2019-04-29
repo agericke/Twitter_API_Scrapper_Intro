@@ -1,0 +1,18 @@
+My project tries to analyze twitter users related to Ethereum's Blockchain. You can see an explanation of the Ethereum users in the file A4-README.md
+
+The idea is to pick main Ethereum's Blockchain realated twitter accounts, obtained their friends and followers, and for the top 10 most frequent twitter accounts also pick all their frineds and followers.
+for the classifying part, we have picked 5.000 real time tweets that contain 
+
+Blockchain related words, and our aim is to classify those users that made those tweets as female or male and see whether there is a strong difference in gender related to the active people on twitter talking about Blockchain stuff or not. For testing the model, we picked in the same way 500 real time tweets realted to the same words, and manually labeled their gender.
+
+Regarding the clustering, we can see that the different methods tested cluster the community in 3 different clusters. When analyzing the members for each cluster, we focused in trying to analyze how the different main initial 
+accounts where clustered. We saw that as more or less expected, ConsesnsyAcademy, gavoyfork and trufflesuite are nearly always clustered together, as they are accounts focused on development of Smart Contracts in Ethereum mainly and gavoforky is one of the founders of Ethereum, but is more active regarding development than is Vitalik.
+On the other hand, binance and coinbase, the two crypto exchanges are always clustered together and oftenly clustered with Vitalik Buterin and ethereum official account. The only account that is in one case cluster alone, is trufflesuite, and this can be due to the distinct services they have not strictly realted to Ethereum Blockchain.
+
+Finally, regarding the classification by gender, we can see that we have a best accuracy of 0.74 more or less, and if we see the plot of accuracies, we can see a bg difference between the settings that use the description for tokenization of the tokens, and the ones that do not use it. so it is really important to use the description, actually you can see a summary of mean accuracies per setting, being the use description setting the best one. We can also see in the summary of top missclassified, that many of them are due to the user's writting in their description something about their families for example. You can see in one example that one female has in the description "very proud of my  husband", and husband is a strong coefficient for males and that causes the missclassification. So we conclude that mainly the errors are because of description about other people distinct to the user using terms that are strong coefficients for the other users'.
+
+If you ran summary.py, it will call all the other 3 python scripts andyou will see a summary of the results of all of them.
+
+I have enabled an argument to be passed to summary.py, as the Girvan Newman algorithm takes more than 4 hours to run, if you do not pass the first argument as True to summarize.py, i.e. run it as:
+python summarize.py True
+it will only run the other two clustering algorithms which are much faster.

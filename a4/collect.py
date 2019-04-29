@@ -1,13 +1,10 @@
 """
 Collect data.
 
-First we will get all the accounts form the file accounts.txt, the followers for this accounts and their frineds.
-Then we will collect a toal of a 500 tweets that mention each account. For all those 500 tweets we will obtain
-the screen_namefor each tweet and the friends for each screen_name.
+First we will get all the accounts form the file ethereum-accounts.txt, the followers for this accounts and their friends.
+Then we will find the 100 most folllowed accounts and also pick their friends and followers.
 """
 # coding: utf-8
-
-
 from collections import Counter
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -15,7 +12,29 @@ import sys
 import time
 import json
 import configparser
+import pickle
+import requests
 from TwitterAPI import TwitterAPI
+
+
+# Fetch male/female names from Census.
+
+def get_census_names():
+    """ Fetch a list of common male/female names from the census.
+    For ambiguous names, we select the more frequent gender."""
+    males = requests.get('http://www2.census.gov/topics/genealogy/1990surnames/dist.male.first').text.split('\n')
+    females = requests.get('http://www2.census.gov/topics/genealogy/1990surnames/dist.female.first').text.split('\n')
+    males_pct = dict([(m.split()[0].lower(), float(m.split()[1])) for m in males if m])
+    females_pct = dict([(f.split()[0].lower(), float(f.split()[1])) for f in females if f])
+    male_names = set([m for m in males_pct if m not in females_pct or males_pct[m] > females_pct[m]])
+    female_names = set([f for f in females_pct if f not in males_pct or females_pct[f] > males_pct[f]])
+    filename = "data/collect/male_names.pkl"
+    pickle.dump(male_names, open(filename,'wb'))
+    print("Census male names file saved to %s" % filename)
+    filename = "data/collect/female_names.pkl"
+    pickle.dump(female_names, open(filename,'wb'))   
+    print("Census female names file saved to %s" % filename)
+    return male_names, female_names
 
 
 def get_twitter(config_file):
@@ -44,10 +63,6 @@ def read_screen_names(filename):
     Returns:
         A list of strings, one per screen_name, in the order they are listed
         in the file.
-
-    Here's a doctest to confirm your implementation is correct.
-    >>> read_screen_names('candidates.txt')
-    ['DrJillStein', 'GovGaryJohnson', 'HillaryClinton', 'realDonaldTrump']
     """
     file = open(filename)
     r = sorted([l.strip() for l in file])
@@ -55,8 +70,6 @@ def read_screen_names(filename):
     return r
 
 
-# I've provided the method below to handle Twitter's rate limiting.
-# You should call this method whenever you need to access the Twitter API.
 def robust_request(twitter, resource, params, max_tries=5):
     """ If a Twitter request fails, sleep for 15 minutes.
     Do this at most max_tries times before quitting.
@@ -71,15 +84,70 @@ def robust_request(twitter, resource, params, max_tries=5):
     """
     for i in range(max_tries):
         request = twitter.request(resource, params)
-        if request.status_code == 200:
+        if request.status_code == 200 or request.status_code == 404:
             return request
         else:
-            print('Got error %s \nsleeping for 15 minutes.' % request.text)
+            print('Got error %s \n with status code %s\nsleeping for 15 minutes.' % (request.text, request.status_code))
             sys.stderr.flush()
             time.sleep(61 * 15)
 
 
-def get_users(twitter, screen_names):
+def get_first_name(tweet):
+    """
+    Get the first name from a twitter object.
+    
+    Params:
+        tweet....The Twitter object from where to pick the user name.
+    Returns:
+        The user first name in lower letters.
+    """
+    if 'user' in tweet and 'name' in tweet['user']:
+        parts = tweet['user']['name'].split()
+        if len(parts) > 0:
+            return parts[0].lower()
+
+
+def get_realtime_tweets(twitter, limit, words, male_names, female_names, filename):
+    """Retrieve real time tweets objects that match any of the words provided, are written in english and located 
+    in the U.S.
+    
+    Store only those tweets that include a user name that matches either a male or female name from the census.
+    
+    Params:
+        twitter........The TwitterAPI object.
+        limit..........The number of tweets we want to retrieve.
+        words..........A list of strings, defining all the words that a tweet can match.
+        male_names.....List of all male names retrieved from the census.
+        female_names...List of all female names retrieved from the census.
+        filename.......Name of the file for storing the real time tweets picked.
+    Returns:
+        A list of dicts, one per tweet, containing all the tweet information
+    """
+    tweets = []
+    while True:
+        try:
+            # Restrict to U.S.
+            for response in twitter.request('statuses/filter',
+                        {'track': words, 'locations':'-124.637,24.548,-66.993,48.9974', 'language': 'en'}):
+                # Check if Twitter object contains user description.
+                if 'user' in response:
+                    # Obtain First name from user description dict.
+                    name = get_first_name(response)
+                    #Append tweet only if name is in any of male or female names
+                    if name in male_names or name in female_names:
+                        tweets.append(response)
+                        if len(tweets) % 100 == 0:
+                            print('found %d tweets' % len(tweets))
+                        if len(tweets) >= limit:
+                            return tweets
+        except:
+            print("Unexpected error:", sys.exc_info()[0])
+    pickle.dump(tweets, open(filename, 'wb'))
+    print("Real time tweets saved to %s" % filename)
+    return tweets
+
+
+def get_users_by_screen_name(twitter, screen_names):
     """Retrieve the Twitter user objects for each screen_name.
     Params:
         twitter........The TwitterAPI object.
@@ -87,24 +155,16 @@ def get_users(twitter, screen_names):
     Returns:
         A list of dicts, one per user, containing all the user information
         (e.g., screen_name, id, location, etc)
-
-    >>> twitter = get_twitter()
-    >>> users = get_users(twitter, ['twitterapi', 'twitter'])
-    >>> [u['id'] for u in users]
-    [6253282, 783214]
     """
-    ###TODO
     results = []
     for s in screen_names:
         results.extend(robust_request(twitter, "users/lookup", {'screen_name': s}))
     return results
 
+
 def get_friends(twitter, screen_name):
     """ Return a list of Twitter IDs for users that this person follows, up to 5000.
     See https://dev.twitter.com/rest/reference/get/friends/ids
-
-    Note, because of rate limits, it's best to test this method for one candidate before trying
-    on all candidates.
 
     Args:
         twitter.......The TwitterAPI object
@@ -114,21 +174,18 @@ def get_friends(twitter, screen_name):
 
     Note: If a user follows more than 5000 accounts, we will limit ourselves to
     the first 5000 accounts returned.
-
-    In this test case, I return the first 5 accounts that I follow.
-    >>> twitter = get_twitter()
-    >>> get_friends(twitter, 'aronwc')[:5]
-    [695023, 1697081, 8381682, 10204352, 11669522]
     """
-    ###TODO
-    results = []
+    #print("Inside: Requesting friends for screen_name %s" % screen_name)
     request = robust_request(twitter, "friends/ids", 
                               {'screen_name': screen_name, 'count':5000})
-    return sorted(request.json()['ids'])
+    if (request.status_code != 404):
+        return sorted(request.json()['ids'])
+    else:
+        return str(request.status_code)
 
+      
 def add_all_friends(twitter, users):
     """ Get the list of accounts each user follows.
-    I.e., call the get_friends method for all 4 candidates.
 
     Store the result in each user's dict using a new key called 'friends'.
 
@@ -137,29 +194,32 @@ def add_all_friends(twitter, users):
         users.....The list of user dicts.
     Returns:
         Nothing
-
-    >>> twitter = get_twitter()
-    >>> users = [{'screen_name': 'aronwc'}]
-    >>> add_all_friends(twitter, users)
-    >>> users[0]['friends'][:5]
-    [695023, 1697081, 8381682, 10204352, 11669522]
     """
-    ###TODO
+    #print("Requesting friends for a total of %s users" % len(users))
     for u in users:
-        u['friends'] = get_friends(twitter, u['screen_name'])
+        #print("Outside: Requesting friends for screen_name %s" % u['screen_name'])
+        # Make the requst only if the user is not protected, else store friends as an empty list
+        if u['protected'] != True:
+            response = get_friends(twitter, u['screen_name'])
+            if response == "404":
+                u['friends'] = []
+            else:
+                u['friends'] = response
+        else:
+            #
+            u['friends'] = []
 
 
 def print_num_friends(users):
     """Print the number of friends per candidate, sorted by candidate name.
-    See Log.txt for an example.
+    See Log.txt for an 
+    example.
     Args:
         users....The list of user dicts.
     Returns:
         Nothing
     """
-    ###TODO
-    for u in users:
-        print('\n'.join('%s %d' % (u['screen_name'], len(u['friends'])) for u in users))
+    print('\n'.join('%s %d' % (u['screen_name'], len(u['friends'])) for u in users))
 
 
 def count_friends(users):
@@ -168,164 +228,169 @@ def count_friends(users):
         users: a list of user dicts
     Returns:
         a Counter object mapping each friend to the number of candidates who follow them.
-        Counter documentation: https://docs.python.org/dev/library/collections.html#collections.Counter
-
-    In this example, friend '2' is followed by three different users.
-    >>> c = count_friends([{'friends': [1,2]}, {'friends': [2,3]}, {'friends': [2,3]}])
-    >>> c.most_common()
-    [(2, 3), (3, 2), (1, 1)]
     """
-    ###TODO
     result = Counter()
     for u in users:
         result.update(u['friends'])
-    return result 
+    return result
 
 
-def friend_overlap(users):
-    """
-    Compute the number of shared accounts followed by each pair of users.
-
-    Args:
-        users...The list of user dicts.
-
-    Return: A list of tuples containing (user1, user2, N), where N is the
-        number of accounts that both user1 and user2 follow.  This list should
-        be sorted in descending order of N. Ties are broken first by user1's
-        screen_name, then by user2's screen_name (sorted in ascending
-        alphabetical order). See Python's builtin sorted method.
-
-    In this example, users 'a' and 'c' follow the same 3 accounts:
-    >>> friend_overlap([
-    ...     {'screen_name': 'a', 'friends': ['1', '2', '3']},
-    ...     {'screen_name': 'b', 'friends': ['2', '3', '4']},
-    ...     {'screen_name': 'c', 'friends': ['1', '2', '3']},
-    ...     ])
-    [('a', 'c', 3), ('a', 'b', 2), ('b', 'c', 2)]
-    """
-    ###TODO
-    # l = []
-    # actual = 0
-    # for u in users:
-    #     users_comparation = users[actual:(len(users)-1)]
-
-    #     for friend in u['friends']:
-    #         if friend == 
-    result = []
-    for i, u1 in enumerate(users):
-        for j, u2 in enumerate(users[i+1:]):
-            overlap = len(set(u1['friends']) & set(u2['friends']))
-            results.append((u1['screen_name'], u2['screen_name'], overlap))
-        return sorted(results, key=lambda x: (-x[2], x[0], x[1]))
-
-def followed_by_hillary_and_donald(users, twitter):
-    """
-    Find and return the screen_names of the Twitter users followed by both Hillary
-    Clinton and Donald Trump. You will need to use the TwitterAPI to convert
-    the Twitter ID to a screen_name. See:
-    https://dev.twitter.com/rest/reference/get/users/lookup
-
-    Params:
-        users.....The list of user dicts
-        twitter...The Twitter API object
-    Returns:
-        A list of strings containing the Twitter screen_names of the users
-        that are followed by both Hillary Clinton and Donald Trump.
-    """
-    ###TODO
-#    dt_friends = get_friends(twitter, 'realDonaldTrump')
-#    hc_friends = get_friends(twitter, 'HillaryClinton')
-#
-#    result = []
-#    ids = [user['id'] for user in users]
-#    def i2dscreen():
-    pass
-
-
-
-def create_graph(users, friend_counts):
-    """ Create a networkx undirected Graph, adding each candidate and friend
-        as a node.  Note: while all candidates should be added to the graph,
-        only add friends to the graph if they are followed by more than one
-        candidate. (This is to reduce clutter.)
-
-        Each candidate in the Graph will be represented by their screen_name,
-        while each friend will be represented by their user id.
+def get_followers(twitter, screen_name):
+    """ Return a list of Twitter IDs for users that follow this person, up to 2000.
 
     Args:
-      users...........The list of user dicts.
-      friend_counts...The Counter dict mapping each friend to the number of candidates that follow them.
+        twitter.......The TwitterAPI object
+        screen_name... a string of a Twitter screen name
     Returns:
-      A networkx Graph
+        A list of ints, one per friend ID, sorted in ascending order.
+
+    Note: If a user has more than 5000 followers, we will limit ourselves to
+    the first 5000 accounts returned.
     """
-    ###TODO
-    # Create a graph
-    graph = nx.Graph()
-    friends = Counter()
-    for u in users:
-        graph.add_node(u['screen_name'])
-        friends = u['friends']
-        for f in friends:
-            if (friend_counts.get(f)>1):
-                graph.add_edge(u['screen_name'], f)
-    return graph
-
-
-def draw_network(graph, users, filename):
-    """
-    Draw the network to a file. Only label the candidate nodes; the friend
-    nodes should have no labels (to reduce clutter).
-
-    Methods you'll need include networkx.draw_networkx, plt.figure, and plt.savefig.
-
-    Your figure does not have to look exactly the same as mine, but try to
-    make it look presentable.
-    """
-    ###TODO
-    pass
-
+    #print("Inside: Requesting followers for screen_name %s" % screen_name)
+    request = robust_request(twitter, "followers/ids", 
+                              {'screen_name': screen_name, 'count':5000})
+    if (request.status_code != 404):
+        return sorted(request.json()['ids'])
+    else:
+        return str(request.status_code)
     
 
+def add_all_followers(twitter, users):
+    """ Get all the followers a user has.
 
-#def main():
-#    """ Main method. You should not modify this. """
-#    twitter = get_twitter()
-#    screen_names = read_screen_names('candidates.txt')
-#    print('Established Twitter connection.')
-#    print('Read screen names: %s' % screen_names)
-#    users = sorted(get_users(twitter, screen_names), key=lambda x: x['screen_name'])
-#    print('found %d users with screen_names %s' %
-#          (len(users), str([u['screen_name'] for u in users])))
-#    print(users)
-#    prof_friends = get_friends(twitter, 'aronwc')
-#    print('Complete response')
-#    print(prof_friends)
-#    [695023, 1697081, 8381682, 10204352, 11669522]
-#    add_all_friends(twitter, users)
-#    print('Friends per candidate:')
-#    print_num_friends(users)
-#    friend_counts = count_friends(users)
-#    print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
-#    print('Friend Overlap:\n%s' % str(friend_overlap(users)))
-#    print('User followed by Hillary and Donald: %s' % str(followed_by_hillary_and_donald(users, twitter)))
-#
-#    graph = create_graph(users, friend_counts)
-#    print('graph has %s nodes and %s edges' % (len(graph.nodes()), len(graph.edges())))
-#    draw_network(graph, users, 'network.png')
-#    print('network drawn to network.png')
+    Store the result in each user's dict using a new key called 'followers'.
+
+    Args:
+        twitter...The TwitterAPI object.
+        users.....The list of user dicts.
+    Returns:
+        Nothing
+    """
+    for u in users:
+        #print("Outside: Requesting followers for screen_name %s" % u['screen_name'])
+        if u['protected'] != True:
+            response = get_followers(twitter, u['screen_name'])
+            if response == "404":
+                u['followers'] = []
+            else:
+                u['followers'] = response
+        else:
+            u['followers'] = []
 
 
-# That's it for now! This should give you an introduction to some of the data we'll study in this course.
+def print_num_followers(users):
+    """Print the number of followers per candidate, sorted by candidate name.
+    Args:
+        users....The list of user dicts.
+    Returns:
+        Nothing
+    """
+    print('\n'.join('%s %d' % (u['screen_name'], len(u['followers'])) for u in users))
+
+
+def count_friends_and_followers(users):
+    """ Count how often each user is followed or follows the defined users.
+    Args:
+        users: a list of user dicts
+    Returns:
+        a Counter object mapping each friend to the number of candidates who follow them.
+    """
+    result = Counter()
+    for u in users:
+        result.update(u['friends'])
+        result.update(u['followers'])
+    return result
+
+
+def get_users_by_ids(twitter, ids):
+    """Retrieve the Twitter user objects for each id.
+    Params:
+        twitter........The TwitterAPI object.
+        ids............A list of strings, one per id
+    Returns:
+        A list of dicts, one per user, containing all the user information
+        (e.g., screen_name, id, location, etc)
+    """
+    results = robust_request(twitter, "users/lookup", {'user_id': ids})
+    return sorted(results.json(), key=lambda x: x['screen_name'])
+
+
+def store_users(users, filename):
+    pickle.dump(users, open(filename, 'wb'))
+    print("Users file saved to %s" % filename)
+    
+
+def read_users(filename):
+    pickle.load(open(filename, 'rb'))
+
 
 def main():
-    twitter = get_twitter('./twitter.cfg')
-    screen_names = read_screen_names('ethereum-accounts.txt')
-    print('Established Twitter Connection.')
+    # 0 - Create twitter connection and pick census names
+    male_names, female_names = get_census_names()
+    print('found %d female and %d male names' % (len(female_names), len(male_names)))
+    print('male name sample:', list(male_names)[:5])
+    print('female name sample:', list(female_names)[:5])
+    twitter = get_twitter('twitter.cfg')
+    print('Established Twitter connection.')
+
+    # 1 - Retrieve real time tweets that match Blockchain related words
+    # Create list of blockchain related words
+    words = ['ethereum', 'eth', 'bitcoin', 'btc', 'blockchain', 'cryptocurrencies', 'cryptocurrency', 'crypto', 'token', 'tokens',
+            'solidity', 'litecoin', 'hyperledger','eos','dapp', 'dapps', 'smart contract', 'smart contracts', 'neo', 'miner', 'mining',
+            'sidechain','pos','pow', 'dlt', 'polkadot']
+    filename = 'data/collect/real-time-tweets.pkl'
+    print("Pick tweets realted to Blockchain words %s" % words)
+    tweets = get_realtime_tweets(twitter, 5000, words, male_names, female_names, filename)
+    print("NUMBER OF TWEETS SAMPLED:")
+    print('sampled %d tweets' % len(tweets))
+    print('top names:', Counter(get_first_name(t) for t in tweets).most_common(10))
+    
+    # 2 - Read the screen names we want to build the network from.
+    screen_names = read_screen_names('data/collect/ethereum-accounts.txt')
     print('Read screen names: %s' % screen_names)
-    users = sorted(get_users(twitter, screen_names), key=lambda x: x['screen_name'].lower())
+    
+    # 3 - Get the user's twitter accounts
+    users = sorted(get_users_by_screen_name(twitter, screen_names), key=lambda x: x['screen_name'])
     print('found %d users with screen_names %s' %
           (len(users), str([u['screen_name'] for u in users])))
-    print(users)
+        
+    # 4 - Get the user's each of this user follows (their "friends")
+    # Obtain all friends
+    add_all_friends(twitter, users)
+    print('Friends per candidate:')
+    print_num_friends(users)
+    friend_counts = count_friends(users)
+    print('Most common friends:\n%s' % str(friend_counts.most_common(5)))
+    
+    # Who follows this person?
+    # Pick the first 5.000 people that follow this person.
+    # 5 - Get the user's that follow this user(their "followers")
+    # Obtain all followers for each user
+    add_all_followers(twitter, users)
+    print('Followers per candidate:')
+    print_num_followers(users)
+    friend_and_followers_counts = count_friends_and_followers(users)
+    # Pick the 10 most common followers and users
+    most_common = friend_and_followers_counts.most_common(10)
+    print('Most common friends and followers:\n%s' % str(friend_and_followers_counts.most_common(10)))
+    # Store in a list all the id's of the 10 most common users
+    most_common_ids = [user_tuple[0] for user_tuple in most_common]
+    
+    # 6 - For each of the most common 100 users, obtain the user object and append it to the list of users' dict.
+    new_users = get_users_by_ids(twitter, most_common_ids)
+    print('found %d users with screen_names \n%s' %
+        (len(new_users), str([u['screen_name'] for u in new_users])))
+    
+    # 7 - Find the friends and followers for each of the 100 most common followed users.
+    add_all_friends(twitter, new_users)
+    add_all_followers(twitter, new_users)
+    
+    # 8 - Add new_users to the initial users list and store it in the file users.json
+    users_total = users + new_users
+    print("total user objects obtained with friends and followers %d" % len(users_total)) # Obtain total number of users to store
+    store_users(users_total, 'data/collect/users.pkl')
+
 
 if __name__ == "__main__":
     main()
