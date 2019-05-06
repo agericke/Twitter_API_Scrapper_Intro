@@ -1,0 +1,10 @@
+Grade: 45.00/50.00
+
+1 Deduction(s):
+
+--------------
+#1: 5.00 points
+Failing test: using arrays instead of csr_matrix for cosine_sim and features.
+
+--------------
+
