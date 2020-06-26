@@ -423,7 +423,7 @@ def main():
     print("\n")
     print('worst cross-validation result:\n%s\nwith options\n%s' % (str(worst_result[0]), worst_result_opt))
     
-    filename = 'images/classify/accuracies.png'
+    filename = 'images/classify/accuracies_gab.png'
     plot_sorted_accuracies(results_sorted, filename)
     print("Sorted accuracies plot saved to %s" % filename)
     

@@ -1,4 +1,4 @@
-## Twitter API Initialization and graph analysis
+## Twitter API Initialization and Graph Analysis
 
 This python script is an introduction to the Twitter API and network graph analysis.
 

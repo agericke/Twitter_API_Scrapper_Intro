@@ -31,6 +31,7 @@ def example_graph():
     g.add_edges_from([('A', 'B'), ('A', 'C'), ('B', 'C'), ('B', 'D'), ('D', 'E'), ('D', 'F'), ('D', 'G'), ('E', 'F'), ('G', 'F')])
     return g
 
+
 def bfs(graph, root, max_depth):
     """
     Perform breadth-first search to compute the shortest paths from a root node to all
@@ -177,6 +178,7 @@ def bottom_up(root, node2distances, node2num_paths, node2parents):
                 node_credit[parent] += node_credit[node]/num_paths
     return edges_credit
 
+
 def approximate_betweenness(graph, max_depth):
     """
     Compute the approximate betweenness of each edge, using max_depth to reduce
@@ -216,6 +218,7 @@ def get_components(graph):
     """
     return [c for c in nx.connected_component_subgraphs(graph)]
 
+
 def partition_girvan_newman(graph, max_depth):
     """
     Use your approximate_betweenness implementation to partition a graph.
@@ -248,7 +251,8 @@ def partition_girvan_newman(graph, max_depth):
     """
     graph_copy = graph.copy()
     while (len(get_components(graph_copy)) < 2):
-        edge_to_remove = sorted(approximate_betweenness(graph_copy, max_depth).items(), key=lambda x:x[1], reverse=True)[0][0]
+        edge_to_remove = sorted(approximate_betweenness(graph_copy, max_depth).items(), key=lambda x:x[1], reverse=True)
+        print(edge_to_remove)
         graph_copy.remove_edge(*edge_to_remove)
     return list(get_components(graph_copy))
 
@@ -276,8 +280,6 @@ def get_subgraph(graph, min_degree):
         if degree >= min_degree:
             nodes_subgraph.update(node)
     return graph.subgraph(nodes_subgraph)
-    
-
 
 """"
 Compute the normalized cut for each discovered cluster.
@@ -379,7 +381,6 @@ def brute_force_norm_cut(graph, max_size):
     q.append
 
 
-
 def score_max_depths(graph, max_depths):
     """
     In order to assess the quality of the approximate partitioning method
@@ -449,7 +450,6 @@ def make_training_graph(graph, test_node, n):
     return graph_copy
 
 
-
 def jaccard(graph, node, k):
     """
     Compute the k highest scoring edges to add to this node based on
@@ -485,7 +485,6 @@ def jaccard(graph, node, k):
         neighbors2 = set(graph.neighbors(n))
         new_edges[tuple((node, n))] = len(neighbors & neighbors2) / len(neighbors | neighbors2)
     return sorted(new_edges.items(), key=lambda x: (-x[1], x[0][1]))[:k]
-
 
 
 def evaluate(predicted_edges, graph):
@@ -558,7 +557,6 @@ def main():
     train_graph = make_training_graph(subgraph, test_node, 5)
     print('train_graph has %d nodes and %d edges' %
          (train_graph.order(), train_graph.number_of_edges()))
-
 
     jaccard_scores = jaccard(train_graph, test_node, 5)
     print('\ntop jaccard scores for Bill Gates:')

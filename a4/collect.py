@@ -340,7 +340,7 @@ def main():
             'solidity', 'litecoin', 'hyperledger','eos','dapp', 'dapps', 'smart contract', 'smart contracts', 'neo', 'miner', 'mining',
             'sidechain','pos','pow', 'dlt', 'polkadot']
     filename = 'data/collect/real-time-tweets.pkl'
-    print("Pick tweets realted to Blockchain words %s" % words)
+    print("Pick tweets related to Blockchain words %s" % words)
     tweets = get_realtime_tweets(twitter, 5000, words, male_names, female_names, filename)
     print("NUMBER OF TWEETS SAMPLED:")
     print('sampled %d tweets' % len(tweets))

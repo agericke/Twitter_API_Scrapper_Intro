@@ -1,3 +1,5 @@
 # do note upload notebooks
 notebooks/
 .ipynb_checkpoints/
+twitter_cfg
+*.pkl
