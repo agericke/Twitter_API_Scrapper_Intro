@@ -5,6 +5,7 @@ This project analyses twitter users related to Ethereum's Blockchain. It makes a
 The project consists of three parts:
 
 1. **Collect**: The project collects raw data from specific Twitter accounts social network. site (Twitter, Facebook, Reddit, Instagram, etc.) It also collects data for census names. Additionally, we collect real time tweets related to pecified blockchain related words.
+        - For changing the Twitter accounts you want to collect, modify the ethereum-accounts.txt under `data` folder.
 2. Perform **community detection** to cluster users into communities.
 3. Perform **supervised classification** to annotate messages and/or users according to some criterion.
 4. Analyze the results and **summarize** your conclusions. 
@@ -62,3 +63,10 @@ Other notes:
 - It is expected that when I run your `collect.py` script, I may get different data than you collected when you tested your code. While the final results of the analysis may differ, your scripts should still work on new datasets.
 - You may checkin to Github any configuration or data files that your code needs. For example, if you've used manually annotated training data to fit a classifier, you may store that in Github. However, you should not store large data files (e.g., >50Mb). However, please ensure that your code will run using the commands above. Ensure that you use *relative*, not *absolute* paths when needed. (E.g., don't put "C:/Aron/data" as a path.) I recommend checking that your code works on another system prior to submission.
 - If you use any non-standard libraries, please include a list of the library names in a file `requirements.txt`. I should then be able to install the with the command `pip install -r requirements.txt`.
+
+## SETUP
+
+First of all install all the required packages by running:
+`pip install -r requirements.txt`
+
+Then, create a file named `twitter.cfg` in the root directory containing your `user_key` and `access_tokens`.
